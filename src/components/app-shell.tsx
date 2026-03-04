@@ -42,7 +42,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen overflow-x-clip bg-[var(--background)] transition-colors">
       <div className={cn("mx-auto grid min-h-screen max-w-[1500px] min-w-0 grid-cols-1 gap-3 p-3 sm:gap-4 sm:p-4", collapsed ? "lg:grid-cols-[78px_1fr]" : "lg:grid-cols-[248px_1fr]")}>
-        <div className="sticky top-0 z-40 flex items-center justify-between rounded-xl border border-slate-200 bg-white/90 px-3 py-2 backdrop-blur lg:hidden dark:border-slate-800 dark:bg-slate-950/85">
+        <div className="sticky top-0 z-40 flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white/90 px-3 py-2.5 shadow-sm backdrop-blur lg:hidden dark:border-slate-700/70 dark:bg-slate-950/85">
           <div className="flex items-center gap-2">
             <div className="rounded-md bg-slate-900/5 p-1.5 dark:bg-white/5">
               <BookOpenText className="h-4 w-4 text-slate-800 dark:text-slate-100" />
@@ -52,7 +52,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
-            className="rounded-lg border border-slate-200 bg-white p-2 text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            className="rounded-xl border border-slate-200 bg-white p-2 text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
             aria-label="Open menu"
           >
             <Menu className="h-4 w-4" />
@@ -63,12 +63,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           initial={prefersReducedMotion ? false : { opacity: 0, x: -16 }}
           animate={prefersReducedMotion ? undefined : { opacity: 1, x: 0 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
-          className="relative hidden overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-b from-white via-slate-50 to-slate-100/70 p-3 shadow-[0_10px_30px_-20px_rgba(15,23,42,0.5)] transition-colors lg:block dark:border-slate-700/70 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950"
+          className="relative hidden overflow-hidden rounded-3xl border border-slate-200/70 bg-gradient-to-b from-white via-slate-50 to-slate-100/80 p-3 shadow-[0_20px_50px_-28px_rgba(15,23,42,0.6)] transition-colors lg:block dark:border-slate-700/70 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950"
         >
           <div className="pointer-events-none absolute -left-10 -top-10 h-28 w-28 rounded-full bg-emerald-500/20 blur-2xl dark:bg-emerald-500/15" />
           <div className="pointer-events-none absolute -bottom-10 -right-10 h-28 w-28 rounded-full bg-sky-500/15 blur-2xl dark:bg-sky-500/10" />
 
-          <div className={cn("relative mb-6 flex items-center px-2", collapsed ? "justify-center" : "justify-between")}>
+          <div className={cn("relative mb-5 flex items-center px-2", collapsed ? "justify-center" : "justify-between")}>
             <div className={cn("flex items-center gap-2.5", collapsed && "justify-center")}>
               <div className="rounded-lg bg-slate-900/5 p-1.5 dark:bg-white/5">
                 <BookOpenText className="h-4.5 w-4.5 text-slate-800 dark:text-slate-100" />
@@ -100,6 +100,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           ) : null}
 
+          {!collapsed ? <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">Workspace</p> : null}
           <nav className="relative space-y-1.5">
             {nav.map((item) => {
               const active = pathname === item.href;
@@ -111,16 +112,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     href={item.href}
                     title={collapsed ? item.label : undefined}
                     className={cn(
-                      "group relative flex items-center rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-white/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-slate-100",
+                      "group relative flex items-center rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-white hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-slate-100",
                       collapsed ? "justify-center" : "gap-2",
                       active &&
-                        "bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-[0_8px_20px_-12px_rgba(2,132,199,0.7)] hover:from-slate-900 hover:to-slate-800 dark:from-slate-100 dark:to-white dark:text-slate-900 dark:hover:from-slate-100 dark:hover:to-white",
+                        "bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-[0_10px_24px_-14px_rgba(2,132,199,0.85)] hover:from-slate-900 hover:to-slate-800 dark:from-slate-100 dark:to-white dark:text-slate-900 dark:hover:from-slate-100 dark:hover:to-white",
                     )}
                   >
                     {!collapsed && !active ? (
                       <span className="absolute left-0 top-1/2 h-0 w-0.5 -translate-y-1/2 rounded-r bg-emerald-500 opacity-0 transition-all duration-200 group-hover:h-5 group-hover:opacity-100 dark:bg-emerald-400" />
                     ) : null}
-                    <Icon className={cn("h-4 w-4 shrink-0", active && "drop-shadow-[0_0_10px_rgba(16,185,129,0.45)]")} />
+                    <div className={cn("rounded-md p-1 transition-colors", active ? "bg-white/15 dark:bg-slate-900/15" : "bg-slate-900/5 dark:bg-white/5")}>
+                      <Icon className={cn("h-4 w-4 shrink-0", active && "drop-shadow-[0_0_10px_rgba(16,185,129,0.45)]")} />
+                    </div>
                     {!collapsed ? item.label : null}
                   </Link>
                 </motion.div>
@@ -142,7 +145,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               animate={prefersReducedMotion ? undefined : { x: 0, opacity: 1 }}
               exit={prefersReducedMotion ? undefined : { x: -24, opacity: 0 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="absolute left-0 top-0 h-full w-[86vw] max-w-[320px] overflow-y-auto border-r border-slate-200 bg-gradient-to-b from-white via-slate-50 to-slate-100 p-3 dark:border-slate-700 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950"
+              className="absolute left-0 top-0 h-full w-[88vw] max-w-[340px] overflow-y-auto border-r border-slate-200/80 bg-gradient-to-b from-white via-slate-50 to-slate-100 p-3 shadow-2xl dark:border-slate-700 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950"
             >
               <div className="mb-5 flex items-center justify-between px-1">
                 <div className="flex items-center gap-2.5">
@@ -161,6 +164,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </button>
               </div>
 
+              <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">Navigate</p>
               <nav className="space-y-1.5">
                 {nav.map((item) => {
                   const active = pathname === item.href;
@@ -171,12 +175,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       href={item.href}
                       onClick={() => setMobileOpen(false)}
                       className={cn(
-                        "group relative flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-white/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-slate-100",
+                        "group relative flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-white hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-slate-100",
                         active &&
                           "bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-[0_8px_20px_-12px_rgba(2,132,199,0.7)] dark:from-slate-100 dark:to-white dark:text-slate-900",
                       )}
                     >
-                      <Icon className={cn("h-4 w-4 shrink-0", active && "drop-shadow-[0_0_10px_rgba(16,185,129,0.45)]")} />
+                      <div className={cn("rounded-md p-1 transition-colors", active ? "bg-white/15 dark:bg-slate-900/15" : "bg-slate-900/5 dark:bg-white/5")}>
+                        <Icon className={cn("h-4 w-4 shrink-0", active && "drop-shadow-[0_0_10px_rgba(16,185,129,0.45)]")} />
+                      </div>
                       {item.label}
                     </Link>
                   );
