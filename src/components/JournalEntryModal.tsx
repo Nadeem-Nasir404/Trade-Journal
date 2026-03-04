@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle, CheckCircle2, Heart, Lightbulb, Upload, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -54,14 +54,30 @@ export function JournalEntryModal({ open, editingId, form, onChange, onClose, on
     .filter(Boolean).length;
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] max-w-3xl overflow-hidden border-slate-200 bg-white p-0 dark:border-slate-800 dark:bg-slate-950">
-        <DialogHeader className="border-b border-emerald-200 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 px-5 py-4 dark:border-emerald-900/30">
+    <AnimatePresence>
+      {open ? (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+          />
+          <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", duration: 0.5 }}
+              className="pointer-events-auto max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950"
+            >
+              <div className="border-b border-emerald-200 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 px-5 py-4 dark:border-emerald-900/30">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2.5">
               <div className="rounded-lg bg-emerald-500 p-2 text-white"><Heart className="h-4 w-4" /></div>
               <div>
-                <DialogTitle>{editingId ? "Edit Reflection" : "Trade Reflection"}</DialogTitle>
+                <h2 className="text-lg font-semibold">{editingId ? "Edit Reflection" : "Trade Reflection"}</h2>
                 {linkedTradeCount > 0 ? <p className="text-xs text-slate-600 dark:text-slate-300">Linked trades: {linkedTradeCount}</p> : null}
               </div>
             </div>
@@ -69,7 +85,7 @@ export function JournalEntryModal({ open, editingId, form, onChange, onClose, on
               <X className="h-4 w-4" />
             </Button>
           </div>
-        </DialogHeader>
+        </div>
         <div className="space-y-5 overflow-y-auto p-5">
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1"><Label>Date</Label><Input type="date" value={form.entryDate} onChange={(e) => onChange((p) => ({ ...p, entryDate: e.target.value }))} /></div>
@@ -155,7 +171,10 @@ export function JournalEntryModal({ open, editingId, form, onChange, onClose, on
           <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
           <Button onClick={() => void onSave()} className="bg-emerald-500 text-white hover:bg-emerald-600">{editingId ? "Update Reflection" : "Save Reflection"}</Button>
         </div>
-      </DialogContent>
-    </Dialog>
+            </motion.div>
+          </div>
+        </>
+      ) : null}
+    </AnimatePresence>
   );
 }
