@@ -19,7 +19,7 @@ export function getColorByValue(metric: KpiMetricKey, value: number) {
     case "trades":
       return { text: "text-sky-600", spark: "#0EA5E9", glow: "shadow-sky-500/20" };
     case "longShort":
-      return { text: "text-violet-600", spark: "#8B5CF6", glow: "shadow-violet-500/20" };
+      return { text: "text-sky-600", spark: "#0EA5E9", glow: "shadow-sky-500/20" };
     default:
       return { text: "text-slate-200", spark: "#64748B", glow: "shadow-slate-500/20" };
   }

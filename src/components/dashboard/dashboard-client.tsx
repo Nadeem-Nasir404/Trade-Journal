@@ -258,9 +258,7 @@ export function DashboardClient() {
               <TabsTrigger value="calendar">Calendar</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
               <TabsTrigger value="performance">Performance</TabsTrigger>
-              <TabsTrigger value="psychology">Psychology</TabsTrigger>
-              <TabsTrigger value="risk">Risk management</TabsTrigger>
-              <TabsTrigger value="strategy">Strategy</TabsTrigger>
+              <TabsTrigger value="coming-soon">More (Soon)</TabsTrigger>
             </TabsList>
 
             <TabsContent value="calendar">
@@ -322,9 +320,14 @@ export function DashboardClient() {
               </div>
             </TabsContent>
 
-            {["psychology", "risk", "strategy"].map((tab) => (
-              <TabsContent key={tab} value={tab}><Card><CardHeader><CardTitle className="capitalize">{tab.replace("-", " ")}</CardTitle><CardDescription>Placeholder tab ready for future expansion.</CardDescription></CardHeader></Card></TabsContent>
-            ))}
+            <TabsContent value="coming-soon">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Upcoming Modules</CardTitle>
+                  <CardDescription>Psychology, risk management, and strategy dashboards are coming soon.</CardDescription>
+                </CardHeader>
+              </Card>
+            </TabsContent>
           </Tabs>
         </div>
 

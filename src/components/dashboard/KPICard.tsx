@@ -23,7 +23,7 @@ export function KPICard({ icon, label, value, subText, trend, tone }: KPICardPro
 
   return (
     <motion.div whileHover={reduceMotion ? undefined : { y: -2 }} transition={{ duration: 0.15 }} className="min-w-0 will-change-transform">
-      <Card className={cn("relative overflow-hidden border-slate-300 bg-white shadow-sm transition-shadow hover:shadow-lg dark:border-slate-700 dark:bg-slate-900", tone.glow)}>
+      <Card className={cn("relative overflow-hidden border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-lg dark:border-slate-700 dark:bg-slate-900", tone.glow)}>
         <div className="absolute inset-x-0 bottom-0 h-10 opacity-20">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data}>

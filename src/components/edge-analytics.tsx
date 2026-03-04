@@ -242,7 +242,7 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
             { label: "Quarter", value: "QUARTER" },
             { label: "All Time", value: "ALL" },
           ].map((range) => (
-            <Button key={range.value} size="sm" variant={timeRange === range.value ? "default" : "outline"} onClick={() => setTimeRange(range.value as TimeRange)}>
+            <Button key={range.value} size="sm" variant={timeRange === range.value ? "default" : "outline"} className={timeRange === range.value ? "bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-500 dark:text-white dark:hover:bg-emerald-600" : ""} onClick={() => setTimeRange(range.value as TimeRange)}>
               {range.label}
             </Button>
           ))}
@@ -388,7 +388,7 @@ function MetricCard({
   }[tone];
 
   return (
-    <div className={`rounded-xl border p-4 ${toneClass}`}>
+    <div className={`rounded-xl border shadow-sm transition-shadow hover:shadow-md ${toneClass} p-4`}>
       <div className="mb-2 flex items-center gap-2 text-xs font-semibold">
         {icon}
         {label}
