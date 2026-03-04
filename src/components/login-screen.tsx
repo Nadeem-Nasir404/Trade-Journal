@@ -4,12 +4,18 @@ import { FormEvent, useState } from "react";
 import { motion } from "framer-motion";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { Space_Grotesk } from "next/font/google";
 
 type FormErrors = {
   email?: string;
   password?: string;
   root?: string;
 };
+
+const displayFont = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+});
 
 export function LoginScreen() {
   const router = useRouter();
@@ -68,7 +74,7 @@ export function LoginScreen() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-teal-950 via-slate-900 to-slate-950 p-4">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-teal-950 via-slate-900 to-slate-950 p-0">
       <motion.div
         className="absolute left-[6%] top-[10%] h-[52vw] w-[52vw] max-h-[420px] max-w-[420px] rounded-full bg-emerald-500/20 blur-3xl"
         animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.5, 0.3], x: [0, 50, 0], y: [0, -30, 0] }}
@@ -94,21 +100,41 @@ export function LoginScreen() {
         ))}
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, ease: "easeOut" }}
-        className="relative z-10 w-full max-w-md pt-6 sm:pt-10"
-      >
-        <div className="rounded-2xl border border-slate-700/50 bg-slate-900/70 p-5 shadow-2xl backdrop-blur-2xl sm:rounded-3xl sm:p-8 md:p-10">
+      <div className="relative z-10 grid min-h-screen w-full grid-cols-1 overflow-hidden bg-[#020617]/40 backdrop-blur-xl md:grid-cols-2">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="relative hidden md:block"
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(900px_500px_at_12%_88%,#10b981_8%,transparent_58%),radial-gradient(760px_420px_at_84%_8%,#0ea5e9_5%,transparent_42%),linear-gradient(165deg,#020617_5%,#0b1227_48%,#111c3a_70%,#0f172a_100%)]" />
+          <div className="absolute inset-0 opacity-40 [background:linear-gradient(150deg,transparent_36%,#10b981_43%,transparent_52%)]" />
+          <div className="absolute inset-0 opacity-30 [background:linear-gradient(204deg,transparent_58%,#06b6d4_64%,transparent_72%)]" />
+          <div className="absolute bottom-12 left-8 right-8">
+            <p className={`${displayFont.className} max-w-[520px] text-4xl font-medium leading-[1.08] tracking-tight text-slate-100 xl:text-5xl`}>
+              Become a better trader, by yourself.
+            </p>
+            <p className={`${displayFont.className} mt-4 max-w-[420px] text-lg font-medium text-emerald-200/90`}>
+              Alpha Journal for disciplined execution, review, and growth.
+            </p>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="flex items-center justify-center px-3 py-4 sm:px-6 sm:py-6"
+        >
+        <div className="w-full max-w-[420px] rounded-2xl border border-slate-700/50 bg-slate-900/70 p-4 shadow-2xl backdrop-blur-2xl sm:max-w-[450px] sm:rounded-3xl sm:p-5 md:p-6">
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, duration: 0.6 }} className="mb-6 text-center">
-            <div className="mb-4 inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/30">
-              <svg className="h-10 w-10 text-slate-900" fill="currentColor" viewBox="0 0 24 24">
+            <div className="mb-3 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/30 sm:h-18 sm:w-18">
+              <svg className="h-8 w-8 text-slate-900" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" />
               </svg>
             </div>
-            <h1 className="mb-2 text-2xl font-bold text-white sm:text-3xl">TradeJournal</h1>
-            <p className="mb-4 text-sm text-slate-400">Track performance and sharpen your edge</p>
+            <h1 className="mb-2 text-xl font-bold text-white sm:text-2xl">TradeJournal</h1>
+            <p className="mb-3 text-sm text-slate-400">Track performance and sharpen your edge</p>
 
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -117,7 +143,7 @@ export function LoginScreen() {
               className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2"
             >
               <svg className="h-4 w-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
               <span className="text-xs font-semibold text-emerald-400">Trusted by 2,300+ active traders</span>
             </motion.div>
@@ -131,7 +157,7 @@ export function LoginScreen() {
             disabled={isLoading}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="mb-6 flex w-full items-center justify-center gap-3 rounded-xl bg-white px-6 py-3.5 font-semibold text-slate-900 shadow-lg transition-all duration-200 hover:bg-gray-50 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+            className="mb-5 flex h-12 w-full items-center justify-center gap-3 rounded-xl bg-white px-5 py-2.5 font-semibold text-slate-900 shadow-lg transition-all duration-200 hover:bg-gray-50 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -142,12 +168,12 @@ export function LoginScreen() {
             {isLoading ? "Connecting..." : "Continue with Google"}
           </motion.button>
 
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6, duration: 0.5 }} className="relative mb-6">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6, duration: 0.5 }} className="relative mb-5">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-700" /></div>
             <div className="relative flex justify-center text-sm"><span className="bg-slate-900/70 px-4 text-slate-500">OR USE EMAIL</span></div>
           </motion.div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7, duration: 0.5 }}>
               <label className="mb-2 block text-sm font-semibold text-slate-300">Email</label>
               <input
@@ -157,7 +183,7 @@ export function LoginScreen() {
                   setEmail(e.target.value);
                   setErrors((prev) => ({ ...prev, email: undefined, root: undefined }));
                 }}
-                className="w-full rounded-xl border-2 border-slate-700 bg-slate-800/50 px-4 py-3.5 text-white placeholder-slate-500 transition-all duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="h-12 w-full rounded-xl border-2 border-slate-700 bg-slate-800/50 px-4 py-2.5 text-white placeholder-slate-500 transition-all duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 placeholder="you@example.com"
               />
               {errors.email ? <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mt-1.5 text-sm text-red-400">{errors.email}</motion.p> : null}
@@ -172,7 +198,7 @@ export function LoginScreen() {
                   setPassword(e.target.value);
                   setErrors((prev) => ({ ...prev, password: undefined, root: undefined }));
                 }}
-                className="w-full rounded-xl border-2 border-slate-700 bg-slate-800/50 px-4 py-3.5 text-white placeholder-slate-500 transition-all duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="h-12 w-full rounded-xl border-2 border-slate-700 bg-slate-800/50 px-4 py-2.5 text-white placeholder-slate-500 transition-all duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 placeholder="Enter your password"
               />
               {errors.password ? <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mt-1.5 text-sm text-red-400">{errors.password}</motion.p> : null}
@@ -188,7 +214,7 @@ export function LoginScreen() {
               disabled={isLoading}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-3.5 font-bold text-white shadow-lg shadow-emerald-500/20 transition-all duration-200 hover:from-emerald-600 hover:to-teal-700 hover:shadow-xl hover:shadow-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-12 w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-2.5 font-bold text-white shadow-lg shadow-emerald-500/20 transition-all duration-200 hover:from-emerald-600 hover:to-teal-700 hover:shadow-xl hover:shadow-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -202,7 +228,7 @@ export function LoginScreen() {
             </motion.button>
           </form>
 
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 0.5 }} className="mt-8 flex flex-wrap items-center justify-center gap-4 border-t border-slate-700/50 pt-6 sm:gap-6">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 0.5 }} className="mt-6 flex flex-wrap items-center justify-center gap-3 border-t border-slate-700/50 pt-4 sm:gap-5">
             <div className="flex items-center gap-2">
               <svg className="h-4 w-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -224,6 +250,7 @@ export function LoginScreen() {
           </motion.div>
         </div>
       </motion.div>
+      </div>
     </div>
   );
 }
