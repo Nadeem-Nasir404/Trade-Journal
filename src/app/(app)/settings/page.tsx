@@ -31,7 +31,10 @@ export default function SettingsPage() {
     setResult(null);
     try {
       const res = await fetch("/api/integrations/bybit/sync", { method: "POST" });
-      const json = (await res.json()) as SyncResponse & { error?: string };
+      const contentType = res.headers.get("content-type") || "";
+      const json = (contentType.includes("application/json")
+        ? await res.json()
+        : { message: await res.text() }) as SyncResponse & { error?: string };
       if (!res.ok) {
         const parts = [
           json.message || json.error || "Bybit sync failed.",
