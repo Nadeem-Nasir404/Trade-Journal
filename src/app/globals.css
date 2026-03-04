@@ -1,0 +1,62 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --charcoal-primary: #1e293b;
+  --charcoal-secondary: #64748b;
+  --charcoal-accent: #10b981;
+  --charcoal-bg: #0f172a;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --muted: #e2e8f0;
+  --border: #cbd5e1;
+}
+
+.dark {
+  --charcoal-primary: #1e293b;
+  --charcoal-secondary: #64748b;
+  --charcoal-accent: #10b981;
+  --charcoal-bg: #0f172a;
+  --background: #020617;
+  --foreground: #e2e8f0;
+  --card: #0b1733;
+  --muted: #1e293b;
+  --border: #334155;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-app-sans);
+  --font-mono: var(--font-app-mono);
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+  transition: background-color 250ms ease, color 250ms ease;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

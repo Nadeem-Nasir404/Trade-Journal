@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TradeSide {
+  LONG
+  SHORT
+}
+
+enum TradeStatus {
+  RUNNING
+  PROFIT
+  LOSS
+  BREAKEVEN
+}
+
+model Trade {
+  id             Int           @id @default(autoincrement())
+  userId         String?
+  tradeDate      DateTime
+  symbol         String
+  side           TradeSide
+  entryPrice     Float?
+  exitPrice      Float?
+  stopLoss       Float?
+  takeProfit     Float?
+  quantity       Float         @default(1)
+  riskUsd        Float
+  resultUsd      Float
+  status         TradeStatus    @default(RUNNING)
+  setup          String?
+  strategy       String?
+  emotions       String?
+  notes          String?
+  createdAt      DateTime      @default(now())
+  journalEntryId Int?
+  journalEntry   JournalEntry? @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
+
+  @@index([tradeDate])
+  @@index([symbol])
+  @@index([side])
+  @@index([journalEntryId])
+}
+
+model JournalEntry {
+  id               Int     @id @default(autoincrement())
+  userId           String?
+  entryDate        DateTime
+  title            String
+  content          String
+  imageUrl         String?
+  mood             String?
+  tags             String?
+  strategyTags     String?
+  preTradeMood     String?
+  executionQuality String?
+  score            Int?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  trades           Trade[]
+
+  @@index([entryDate])
+  @@index([title])
+}
