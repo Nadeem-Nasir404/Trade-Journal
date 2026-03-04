@@ -75,7 +75,7 @@ export function AiChatClient() {
   }
 
   return (
-    <Card className="overflow-hidden border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+    <Card className="min-w-0 overflow-hidden border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
       <div className="border-b border-slate-200 bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-cyan-500/10 px-6 py-5 dark:border-slate-800">
         <div className="flex items-center gap-3">
           <div className="rounded-lg bg-emerald-500/20 p-2">

@@ -229,7 +229,7 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
   const lossWidth = (Math.abs(analytics.avgLoss) / totalAbs) * 100;
 
   return (
-    <div className="space-y-5">
+    <div className="min-w-0 space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Advanced Analytics</h1>
@@ -249,7 +249,7 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
         </div>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid min-w-0 gap-3 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard icon={<Target className="h-4 w-4" />} label="Most Profitable Symbol" value={analytics.topSymbol} subtitle={`${usd(analytics.topSymbolProfit)} total`} tone="emerald" />
         <MetricCard icon={<Calendar className="h-4 w-4" />} label="Best Trading Day" value={analytics.bestDay} subtitle={usd(analytics.bestDayProfit)} tone="blue" />
         <MetricCard icon={<Zap className="h-4 w-4" />} label="Win Rate" value={`${analytics.winRate}%`} subtitle={`${analytics.wins}/${analytics.totalTrades} wins`} tone={analytics.winRate >= 50 ? "emerald" : "amber"} />
@@ -293,7 +293,7 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="grid min-w-0 gap-4 xl:grid-cols-2">
         <Card className="border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 to-emerald-500/5">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base text-emerald-700 dark:text-emerald-300"><TrendingUp className="h-4 w-4" />Winning Streaks</CardTitle>
@@ -320,7 +320,7 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
         </Card>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="grid min-w-0 gap-4 xl:grid-cols-2">
         <Card className="border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
           <CardHeader className="pb-3"><CardTitle className="text-base">Average Win vs Average Loss</CardTitle></CardHeader>
           <CardContent className="space-y-4">
@@ -343,7 +343,7 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
 
         <Card className="border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
           <CardHeader className="pb-3"><CardTitle className="text-base">Trade Distribution</CardTitle></CardHeader>
-          <CardContent className="flex items-center gap-4">
+          <CardContent className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
             <div className="relative h-24 w-24 rounded-full bg-slate-200 dark:bg-slate-800">
               <div className="absolute inset-0 rounded-full" style={{ background: `conic-gradient(#10b981 0 ${analytics.winRate}%, #f43f5e ${analytics.winRate}% 100%)` }} />
               <div className="absolute inset-2 flex items-center justify-center rounded-full bg-white text-xs font-semibold dark:bg-slate-950">{analytics.winRate}%</div>

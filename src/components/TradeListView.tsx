@@ -83,19 +83,19 @@ export default function TradeListView({
   }, [trades]);
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl border border-slate-200 bg-gradient-to-r from-white to-slate-50 p-6 backdrop-blur-xl dark:border-slate-700 dark:from-slate-900/90 dark:to-slate-900/50"
+        className="min-w-0 rounded-2xl border border-slate-200 bg-gradient-to-r from-white to-slate-50 p-4 backdrop-blur-xl sm:p-6 dark:border-slate-700 dark:from-slate-900/90 dark:to-slate-900/50"
       >
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-emerald-500/20 p-2">
               <Calendar className="h-5 w-5 text-emerald-400" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+              <h2 className="text-xl font-bold text-slate-900 sm:text-2xl dark:text-white">
                 {new Date(date).toLocaleDateString("en-US", {
                   weekday: "long",
                   month: "long",
@@ -109,7 +109,7 @@ export default function TradeListView({
 
           <button
             onClick={onAddTrade}
-            className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-3 font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all hover:from-emerald-600 hover:to-teal-700"
+            className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-3 font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all hover:from-emerald-600 hover:to-teal-700 sm:w-auto"
           >
             + Add Trade
           </button>
@@ -193,15 +193,15 @@ function TradeCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4 }}
       whileHover={{ y: -2 }}
-      className={`group overflow-hidden rounded-xl border bg-white backdrop-blur-xl transition-all hover:shadow-lg dark:bg-slate-900/50 ${config.border}`}
+      className={`group min-w-0 overflow-hidden rounded-xl border bg-white backdrop-blur-xl transition-all hover:shadow-lg dark:bg-slate-900/50 ${config.border}`}
     >
-      <div className="p-5">
-        <div className="mb-4 flex items-start justify-between">
+      <div className="p-4 sm:p-5">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-center gap-4">
             <div className={`rounded-xl p-3 ${config.bg}`}><Icon className={`h-6 w-6 ${config.text}`} /></div>
 
             <div>
-              <div className="mb-1 flex items-center gap-2">
+              <div className="mb-1 flex flex-wrap items-center gap-2">
                 <SymbolLogo symbol={trade.symbol} size={24} />
                 <span className="font-mono text-xl font-bold text-slate-900 dark:text-white">{trade.symbol}</span>
                 <span className={`rounded px-2 py-1 text-xs font-semibold ${trade.side === "LONG" ? "bg-emerald-500/20 text-emerald-400" : "bg-rose-500/20 text-rose-400"}`}>
@@ -209,7 +209,7 @@ function TradeCard({
                 </span>
               </div>
 
-              <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
+              <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400 sm:gap-4">
                 <span className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
                   {new Date(trade.tradeDate).toLocaleTimeString("en-US", {
@@ -222,7 +222,7 @@ function TradeCard({
             </div>
           </div>
 
-          <div className="text-right">
+          <div className="text-left sm:text-right">
             <div className={`font-mono text-2xl font-bold ${isProfitable ? "text-emerald-400" : "text-rose-400"}`}>
               {isProfitable ? "+" : ""}{pnl.toFixed(2)}
             </div>
@@ -251,8 +251,8 @@ function TradeCard({
           </div>
         ) : null}
 
-        <div className="flex items-center justify-between border-t border-slate-200 pt-4 dark:border-slate-700/50">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-700/50">
+          <div className="flex flex-wrap items-center gap-2">
             <button onClick={onView} className="flex items-center gap-2 rounded-lg px-4 py-2 text-emerald-400 transition-colors hover:bg-emerald-500/10">
               <Eye className="h-4 w-4" />
               <span className="text-sm font-medium">View Details</span>
@@ -269,7 +269,7 @@ function TradeCard({
             ) : null}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-end sm:self-auto">
             <button onClick={onEdit} className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-blue-500 dark:hover:bg-slate-800 dark:hover:text-blue-400"><Edit className="h-4 w-4" /></button>
             <button onClick={onDelete} className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-rose-500 dark:hover:bg-slate-800 dark:hover:text-rose-400"><Trash2 className="h-4 w-4" /></button>
           </div>

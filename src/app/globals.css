@@ -41,10 +41,14 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), sans-serif;
   transition: background-color 250ms ease, color 250ms ease;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 html {
   scroll-behavior: smooth;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 @media (prefers-reduced-motion: reduce) {

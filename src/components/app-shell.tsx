@@ -40,14 +40,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] transition-colors">
-      <div className={cn("mx-auto grid min-h-screen max-w-[1500px] grid-cols-1 gap-3 p-3 sm:gap-4 sm:p-4", collapsed ? "lg:grid-cols-[78px_1fr]" : "lg:grid-cols-[248px_1fr]")}>
+    <div className="min-h-screen overflow-x-clip bg-[var(--background)] transition-colors">
+      <div className={cn("mx-auto grid min-h-screen max-w-[1500px] min-w-0 grid-cols-1 gap-3 p-3 sm:gap-4 sm:p-4", collapsed ? "lg:grid-cols-[78px_1fr]" : "lg:grid-cols-[248px_1fr]")}>
         <div className="sticky top-0 z-40 flex items-center justify-between rounded-xl border border-slate-200 bg-white/90 px-3 py-2 backdrop-blur lg:hidden dark:border-slate-800 dark:bg-slate-950/85">
           <div className="flex items-center gap-2">
             <div className="rounded-md bg-slate-900/5 p-1.5 dark:bg-white/5">
               <BookOpenText className="h-4 w-4 text-slate-800 dark:text-slate-100" />
             </div>
-            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Trade Journal</p>
+            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Alpha Journal</p>
           </div>
           <button
             type="button"
@@ -73,7 +73,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <div className="rounded-lg bg-slate-900/5 p-1.5 dark:bg-white/5">
                 <BookOpenText className="h-4.5 w-4.5 text-slate-800 dark:text-slate-100" />
               </div>
-              {!collapsed ? <p className="text-[15px] font-semibold tracking-tight text-slate-900 dark:text-slate-100">Trade Journal</p> : null}
+              {!collapsed ? <p className="text-[15px] font-semibold tracking-tight text-slate-900 dark:text-slate-100">Alpha Journal</p> : null}
             </div>
             {!collapsed ? (
               <button
@@ -149,7 +149,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <div className="rounded-lg bg-slate-900/5 p-1.5 dark:bg-white/5">
                     <BookOpenText className="h-4.5 w-4.5 text-slate-800 dark:text-slate-100" />
                   </div>
-                  <p className="text-[15px] font-semibold tracking-tight text-slate-900 dark:text-slate-100">Trade Journal</p>
+                  <p className="text-[15px] font-semibold tracking-tight text-slate-900 dark:text-slate-100">Alpha Journal</p>
                 </div>
                 <button
                   type="button"
@@ -186,8 +186,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         ) : null}
 
-        <main className="rounded-2xl border border-slate-300 bg-white p-3 shadow-sm transition-colors sm:p-4 dark:border-slate-700 dark:bg-slate-900 lg:p-6">
-          <div className="mb-4 flex items-center justify-end gap-2 border-b border-slate-200 pb-3 dark:border-slate-800 sm:mb-5 sm:pb-4">
+        <main className="min-w-0 overflow-x-hidden rounded-2xl border border-slate-300 bg-white p-3 shadow-sm transition-colors sm:p-4 dark:border-slate-700 dark:bg-slate-900 lg:p-6">
+          <div className="mb-4 flex flex-wrap items-center justify-end gap-2 border-b border-slate-200 pb-3 dark:border-slate-800 sm:mb-5 sm:pb-4">
             <ThemeToggle />
             <AccountMenu />
           </div>

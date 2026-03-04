@@ -1,4 +1,4 @@
-# Trade Journal
+# Alpha Journal
 
 Trading journal web app built with Next.js App Router, TypeScript, Tailwind CSS, shadcn-style UI components, Prisma, and PostgreSQL.
 

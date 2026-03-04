@@ -19,7 +19,7 @@ const appMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Trade Journal",
+  title: "Alpha Journal",
   description: "Trading journal dashboard and analytics",
 };
 

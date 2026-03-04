@@ -230,13 +230,13 @@ export function DashboardClient() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className={showFilters ? "grid gap-4 xl:grid-cols-[1fr_320px]" : "grid gap-4 xl:grid-cols-1"}>
-        <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
+      <div className={showFilters ? "grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_320px]" : "grid min-w-0 gap-4 xl:grid-cols-1"}>
+        <div className="min-w-0 space-y-4">
           {loading ? (
             <KpiCardsSkeleton />
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+            <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
               <KPICard metric="totalPnl" icon={<DollarSign className="h-4 w-4" />} label="Total PnL" value={fmtUsd(kpiData.totalPnl.current)} subText={kpiData.totalPnl.sub} trend={kpiData.totalPnl.trend} tone={getColorByValue("totalPnl", kpiData.totalPnl.current)} />
               <KPICard metric="trades" icon={<BarChart3 className="h-4 w-4" />} label="# Trades" value={`${kpiData.trades.current}`} subText={kpiData.trades.sub} trend={kpiData.trades.trend} tone={getColorByValue("trades", kpiData.trades.current)} />
               <KPICard metric="winrate" icon={<Target className="h-4 w-4" />} label="Win Rate" value={`${kpiData.winrate.current.toFixed(2)}%`} subText={kpiData.winrate.sub} trend={kpiData.winrate.trend} tone={getColorByValue("winrate", kpiData.winrate.current)} />
@@ -254,7 +254,7 @@ export function DashboardClient() {
           </div>
 
           <Tabs defaultValue="calendar">
-            <TabsList className="w-full justify-start overflow-auto">
+            <TabsList className="w-full max-w-full justify-start overflow-x-auto whitespace-nowrap">
               <TabsTrigger value="calendar">Calendar</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
               <TabsTrigger value="performance">Performance</TabsTrigger>
@@ -266,12 +266,12 @@ export function DashboardClient() {
             <TabsContent value="calendar">
               <Card>
                 <CardHeader>
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
                       <CardTitle>{format(calendarMonth, "MMMM yyyy")}</CardTitle>
                       <CardDescription>Daily PnL and trade count overview</CardDescription>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button variant="outline" size="sm" onClick={() => setCalendarMonth((m) => addMonths(m, -1))}><ChevronLeft className="h-4 w-4" /></Button>
                       <Button variant="outline" size="sm" onClick={() => setCalendarMonth(startOfMonth(new Date()))}>Today</Button>
                       <Button variant="outline" size="sm" onClick={() => setCalendarMonth((m) => addMonths(m, 1))}><ChevronRight className="h-4 w-4" /></Button>
@@ -280,25 +280,29 @@ export function DashboardClient() {
                 </CardHeader>
                 <CardContent>
                   {loading ? <p className="text-sm text-slate-500 dark:text-slate-400">Loading calendar...</p> : null}
-                  <div className="grid grid-cols-7 gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-                    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => <p key={d} className="px-2 py-1">{d}</p>)}
-                  </div>
-                  <div className="mt-2 grid grid-cols-7 gap-2">
-                    {Array.from({ length: firstWeekday }).map((_, idx) => <div key={`blank-${idx}`} className="min-h-24 rounded-lg border border-dashed border-slate-200 dark:border-slate-700" />)}
-                    {monthDaysLimited.map((day) => (
-                      <CalendarCell
-                        key={day.date}
-                        day={day}
-                        maxPnl={maxPnl}
-                        minPnl={minPnl}
-                        isActive={selectedDay?.date === day.date}
-                        isToday={format(new Date(), "yyyy-MM-dd") === day.date}
-                        isBest={bestDay === day.date && day.tradeCount > 0}
-                        isWorst={worstDay === day.date && day.tradeCount > 0}
-                        streak={streakMap.get(day.date)}
-                        onSelect={() => setSelectedDay({ date: day.date, trades: day.trades as UiTrade[] })}
-                      />
-                    ))}
+                  <div className="overflow-x-auto pb-1">
+                    <div className="min-w-[640px]">
+                      <div className="grid grid-cols-7 gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => <p key={d} className="px-2 py-1">{d}</p>)}
+                      </div>
+                      <div className="mt-2 grid grid-cols-7 gap-2">
+                        {Array.from({ length: firstWeekday }).map((_, idx) => <div key={`blank-${idx}`} className="min-h-24 rounded-lg border border-dashed border-slate-200 dark:border-slate-700" />)}
+                        {monthDaysLimited.map((day) => (
+                          <CalendarCell
+                            key={day.date}
+                            day={day}
+                            maxPnl={maxPnl}
+                            minPnl={minPnl}
+                            isActive={selectedDay?.date === day.date}
+                            isToday={format(new Date(), "yyyy-MM-dd") === day.date}
+                            isBest={bestDay === day.date && day.tradeCount > 0}
+                            isWorst={worstDay === day.date && day.tradeCount > 0}
+                            streak={streakMap.get(day.date)}
+                            onSelect={() => setSelectedDay({ date: day.date, trades: day.trades as UiTrade[] })}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -308,7 +312,7 @@ export function DashboardClient() {
               <EdgeAnalytics filters={filters} />
             </TabsContent>
             <TabsContent value="performance">
-              <div className="grid gap-4 lg:grid-cols-2">
+              <div className="grid min-w-0 gap-4 lg:grid-cols-2">
                 <ChartWrapper title="PnL Trend (Filtered)" description="Daily result based on active filters and calendar range">
                   <PnlLineChart data={performancePnlData} />
                 </ChartWrapper>
@@ -324,7 +328,7 @@ export function DashboardClient() {
           </Tabs>
         </div>
 
-        {showFilters ? <Card className="h-fit">
+        {showFilters ? <Card className="h-fit min-w-0">
           <CardHeader>
             <div className="flex items-center justify-between gap-2">
               <div>
