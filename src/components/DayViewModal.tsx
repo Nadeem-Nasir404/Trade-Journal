@@ -43,7 +43,7 @@ export function DayViewModal({ isOpen, dateLabel, trades, onClose, onAddJournal,
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/40"
+            className="fixed inset-0 z-50 bg-black/55 backdrop-blur-sm"
             onClick={onClose}
           />
           <motion.aside
@@ -130,4 +130,3 @@ function Stat({ label, value, tone }: { label: string; value: string | number; t
     </div>
   );
 }
-
