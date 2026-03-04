@@ -65,7 +65,7 @@ export function JournalEntryModal({ open, editingId, form, onChange, onClose, on
                 {linkedTradeCount > 0 ? <p className="text-xs text-slate-600 dark:text-slate-300">Linked trades: {linkedTradeCount}</p> : null}
               </div>
             </div>
-            <Button type="button" variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
+            <Button type="button" variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
               <X className="h-4 w-4" />
             </Button>
           </div>
