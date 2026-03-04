@@ -22,6 +22,8 @@ enum TradeStatus {
 model Trade {
   id             Int           @id @default(autoincrement())
   userId         String?
+  source         String?
+  externalId     String?
   tradeDate      DateTime
   symbol         String
   side           TradeSide
@@ -45,6 +47,7 @@ model Trade {
   @@index([symbol])
   @@index([side])
   @@index([journalEntryId])
+  @@index([userId, source, externalId])
 }
 
 model JournalEntry {
