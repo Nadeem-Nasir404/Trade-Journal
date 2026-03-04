@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import type { TradeFormTrade } from "@/components/AddTradeModal";
+import { TradesEmptyState } from "@/components/BeautifulEmptyStates";
 import { SymbolLogo } from "@/components/symbol-logo";
 
 type ResultKey = "WIN" | "LOSS" | "BREAKEVEN" | "PENDING";
@@ -126,16 +127,7 @@ export default function TradeListView({
       </motion.div>
 
       {trades.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="rounded-2xl border border-dashed border-slate-300 bg-white py-16 text-center backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/50"
-        >
-          <div className="mb-4 inline-flex rounded-full bg-slate-100 p-4 dark:bg-slate-800/50"><TrendingUp className="h-8 w-8 text-slate-500 dark:text-slate-600" /></div>
-          <h3 className="mb-2 text-lg font-semibold text-slate-600 dark:text-slate-400">No trades yet</h3>
-          <p className="mb-6 text-sm text-slate-500">Start logging your trades to track your performance</p>
-          <button onClick={onAddTrade} className="rounded-lg bg-emerald-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-emerald-600">Add First Trade</button>
-        </motion.div>
+        <TradesEmptyState onAddTrade={onAddTrade} />
       ) : (
         <div className="space-y-4">
           {trades.map((trade, index) => (
