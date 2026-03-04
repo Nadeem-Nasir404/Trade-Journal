@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "src/app/api/integrations/bybit/sync/route.ts": {
+      "regions": ["sin1"]
+    }
+  }
+}
+
