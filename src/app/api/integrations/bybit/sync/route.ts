@@ -75,7 +75,17 @@ export async function POST() {
 
   if (!response.ok || !data || data.retCode !== 0) {
     return NextResponse.json(
-      { message: data?.retMsg || "Failed to fetch Bybit executions." },
+      {
+        message: data?.retMsg || "Failed to fetch Bybit executions.",
+        details: {
+          httpStatus: response.status,
+          bybitRetCode: data?.retCode ?? null,
+          bybitRetMsg: data?.retMsg ?? null,
+          baseUrl,
+          category,
+          limit,
+        },
+      },
       { status: 400 },
     );
   }
@@ -140,4 +150,3 @@ export async function POST() {
     totalFetched: executions.length,
   });
 }
-

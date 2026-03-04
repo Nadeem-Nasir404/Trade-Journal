@@ -10,6 +10,14 @@ type SyncResponse = {
   skipped: number;
   totalFetched?: number;
   message?: string;
+  details?: {
+    httpStatus?: number;
+    bybitRetCode?: number | null;
+    bybitRetMsg?: string | null;
+    baseUrl?: string;
+    category?: string;
+    limit?: string;
+  };
 };
 
 export default function SettingsPage() {
@@ -25,7 +33,13 @@ export default function SettingsPage() {
       const res = await fetch("/api/integrations/bybit/sync", { method: "POST" });
       const json = (await res.json()) as SyncResponse & { error?: string };
       if (!res.ok) {
-        setError(json.message || json.error || "Bybit sync failed.");
+        const parts = [
+          json.message || json.error || "Bybit sync failed.",
+          json.details?.bybitRetCode !== undefined ? `retCode: ${json.details.bybitRetCode}` : "",
+          json.details?.bybitRetMsg ? `retMsg: ${json.details.bybitRetMsg}` : "",
+          json.details?.httpStatus ? `http: ${json.details.httpStatus}` : "",
+        ].filter(Boolean);
+        setError(parts.join(" | "));
       } else {
         setResult(json);
       }
@@ -77,4 +91,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
