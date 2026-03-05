@@ -56,6 +56,8 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         userId: true,
+        source: true,
+        externalId: true,
         tradeDate: true,
         symbol: true,
         side: true,

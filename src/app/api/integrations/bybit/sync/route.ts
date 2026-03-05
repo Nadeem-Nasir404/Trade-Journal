@@ -28,12 +28,15 @@ function toNumber(value: unknown) {
   return Number.isFinite(n) ? n : 0;
 }
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
+
+    const url = new URL(request.url);
+    const force = url.searchParams.get("force") === "1";
 
     const apiKey = process.env.BYBIT_API_KEY;
     const apiSecret = process.env.BYBIT_API_SECRET;
@@ -103,12 +106,13 @@ export async function POST() {
         source: "BYBIT",
         externalId: { in: externalIds },
       },
-      select: { externalId: true },
+      select: { id: true, externalId: true },
     });
-    const existingSet = new Set(existing.map((row) => row.externalId).filter(Boolean));
+    const existingMap = new Map(existing.map((row) => [row.externalId ?? "", row.id]));
 
+    let updated = 0;
     const toCreate = executions
-      .filter((item) => !existingSet.has(item.execId as string))
+      .filter((item) => force || !existingMap.has(item.execId as string))
       .map((item) => {
         const side = String(item.side || "").toUpperCase() === "SELL" ? TradeSide.SHORT : TradeSide.LONG;
         const price = toNumber(item.execPrice);
@@ -141,14 +145,41 @@ export async function POST() {
         };
       });
 
+    if (force) {
+      for (const item of executions) {
+        const id = existingMap.get(item.execId as string);
+        if (!id) continue;
+        const pnl = toNumber(item.closedPnl);
+        const fee = Math.abs(toNumber(item.execFee));
+        const resultUsd = Number((pnl - fee).toFixed(2));
+        const status = resultUsd > 0 ? TradeStatus.PROFIT : resultUsd < 0 ? TradeStatus.LOSS : TradeStatus.BREAKEVEN;
+        await prisma.trade.update({
+          where: { id },
+          data: {
+            tradeDate: item.execTime ? new Date(Number(item.execTime)) : undefined,
+            symbol: String(item.symbol || "").toUpperCase(),
+            side: String(item.side || "").toUpperCase() === "SELL" ? TradeSide.SHORT : TradeSide.LONG,
+            entryPrice: toNumber(item.execPrice) || null,
+            quantity: Math.max(toNumber(item.execQty), 0) || 1,
+            resultUsd,
+            status,
+            notes: `Bybit sync (${category}) | orderId: ${item.orderId ?? "n/a"} | fee: ${fee.toFixed(2)}`,
+          },
+        });
+        updated += 1;
+      }
+    }
+
     if (toCreate.length) {
       await prisma.trade.createMany({ data: toCreate });
     }
 
     return NextResponse.json({
       imported: toCreate.length,
-      skipped: executions.length - toCreate.length,
+      skipped: Math.max(0, executions.length - toCreate.length - updated),
+      updated,
       totalFetched: executions.length,
+      force,
     });
   } catch (error) {
     const isPrisma = error instanceof Prisma.PrismaClientKnownRequestError;

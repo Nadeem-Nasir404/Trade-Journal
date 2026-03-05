@@ -23,6 +23,8 @@ type TradeSide = "LONG" | "SHORT";
 export type TradeFormTrade = {
   id: number;
   tradeDate: string;
+  source?: string | null;
+  externalId?: string | null;
   symbol: string;
   side: TradeSide;
   entryPrice: number | null;

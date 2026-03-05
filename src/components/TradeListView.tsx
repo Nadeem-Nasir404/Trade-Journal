@@ -196,6 +196,11 @@ function TradeCard({
               <div className="mb-1 flex flex-wrap items-center gap-2">
                 <SymbolLogo symbol={trade.symbol} size={24} />
                 <span className="font-mono text-xl font-bold text-slate-900 dark:text-white">{trade.symbol}</span>
+                {trade.source === "BYBIT" ? (
+                  <span className="rounded border border-cyan-500/40 bg-cyan-500/10 px-2 py-1 text-xs font-semibold text-cyan-300">
+                    BYBIT
+                  </span>
+                ) : null}
                 <span className={`rounded px-2 py-1 text-xs font-semibold ${trade.side === "LONG" ? "bg-emerald-500/20 text-emerald-400" : "bg-rose-500/20 text-rose-400"}`}>
                   {trade.side === "LONG" ? <><TrendingUp className="mr-1 inline h-3 w-3" />LONG</> : <><TrendingDown className="mr-1 inline h-3 w-3" />SHORT</>}
                 </span>

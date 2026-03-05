@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle2, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 type SyncResponse = {
   imported: number;
   skipped: number;
+  updated?: number;
   totalFetched?: number;
   message?: string;
   details?: {
@@ -24,13 +25,20 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SyncResponse | null>(null);
   const [error, setError] = useState("");
+  const [force, setForce] = useState(false);
+  const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("bybit-last-sync-at");
+    if (saved) setLastSyncAt(saved);
+  }, []);
 
   async function runBybitSync() {
     setLoading(true);
     setError("");
     setResult(null);
     try {
-      const res = await fetch("/api/integrations/bybit/sync", { method: "POST" });
+      const res = await fetch(`/api/integrations/bybit/sync${force ? "?force=1" : ""}`, { method: "POST" });
       const contentType = res.headers.get("content-type") || "";
       const json = (contentType.includes("application/json")
         ? await res.json()
@@ -45,6 +53,9 @@ export default function SettingsPage() {
         setError(parts.join(" | "));
       } else {
         setResult(json);
+        const now = new Date().toISOString();
+        setLastSyncAt(now);
+        localStorage.setItem("bybit-last-sync-at", now);
       }
     } catch {
       setError("Unable to reach sync endpoint.");
@@ -72,6 +83,14 @@ export default function SettingsPage() {
           </Button>
         </div>
 
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+          <label className="inline-flex items-center gap-2">
+            <input type="checkbox" checked={force} onChange={(e) => setForce(e.target.checked)} className="h-4 w-4 rounded border-slate-400" />
+            Force re-import/update existing Bybit trades
+          </label>
+          {lastSyncAt ? <p>Last sync: {new Date(lastSyncAt).toLocaleString()}</p> : <p>Last sync: never</p>}
+        </div>
+
         <div className="grid gap-2 text-xs text-slate-500 dark:text-slate-400">
           <p>Optional env: `BYBIT_BASE_URL`, `BYBIT_RECV_WINDOW`, `BYBIT_CATEGORY`, `BYBIT_LIMIT`</p>
           <p>Recommended permissions: Read-only API key.</p>
@@ -80,7 +99,7 @@ export default function SettingsPage() {
         {result ? (
           <div className="mt-4 rounded-lg border border-emerald-400/30 bg-emerald-500/10 p-3 text-sm text-emerald-700 dark:text-emerald-300">
             <p className="inline-flex items-center gap-2 font-semibold"><CheckCircle2 className="h-4 w-4" />Bybit sync completed</p>
-            <p className="mt-1">Imported: {result.imported} | Skipped: {result.skipped} | Fetched: {result.totalFetched ?? 0}</p>
+            <p className="mt-1">Imported: {result.imported} | Updated: {result.updated ?? 0} | Skipped: {result.skipped} | Fetched: {result.totalFetched ?? 0}</p>
             {result.message ? <p className="mt-1">{result.message}</p> : null}
           </div>
         ) : null}
