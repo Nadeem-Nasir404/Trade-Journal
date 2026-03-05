@@ -223,7 +223,17 @@ export function JournalClient() {
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Journal Timeline</h1>
             <p className="text-sm text-slate-500 dark:text-slate-400">Capture thought process, emotions, and lessons with execution context</p>
           </div>
-          <Button onClick={() => { setEditingId(null); setForm(blankForm); setOpen(true); }} className="bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"><Plus className="h-4 w-4" /> New Entry</Button>
+          <Button
+            onClick={() => {
+              setEditingId(null);
+              setForm(blankForm);
+              setOpen(true);
+            }}
+            className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-3 font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all hover:from-emerald-600 hover:to-teal-700 sm:w-auto"
+          >
+            <Plus className="h-4 w-4" />
+            New Entry
+          </Button>
         </div>
       </div>
 
