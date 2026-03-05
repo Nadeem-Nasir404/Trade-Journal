@@ -105,7 +105,7 @@ export function CalendarCell({
       whileHover={{ scale: 1.05 }}
       transition={{ duration: 0.15 }}
       className={cn(
-        "relative min-h-24 rounded-lg border p-2 text-left transition will-change-transform",
+        "relative min-h-16 rounded-lg border p-1.5 text-left transition will-change-transform sm:min-h-24 sm:p-2",
         cellColor,
         isActive && "ring-2 ring-emerald-400",
         isToday && "animate-pulse ring-2 ring-sky-400",
@@ -118,8 +118,20 @@ export function CalendarCell({
         <span className={cn("absolute left-0 top-0 h-0 w-0 border-l-[12px] border-t-[12px] border-r-[12px] border-t-transparent border-r-transparent", streak > 0 ? "border-l-emerald-500" : "border-l-rose-500")} />
       ) : null}
 
-      <p className="text-xs font-semibold">{format(parseISO(day.date), "d")}</p>
-      <p className={cn("mt-2 text-sm font-extrabold", day.pnl >= 0 ? "text-emerald-700 dark:text-emerald-200" : "text-rose-700 dark:text-rose-200")}>{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(day.pnl)}</p>
+      <p className="text-[11px] font-semibold sm:text-xs">{format(parseISO(day.date), "d")}</p>
+      <p
+        className={cn(
+          "mt-1 text-[11px] font-extrabold leading-tight sm:mt-2 sm:text-sm",
+          day.pnl >= 0 ? "text-emerald-700 dark:text-emerald-200" : "text-rose-700 dark:text-rose-200",
+        )}
+      >
+        <span className="sm:hidden">
+          {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(day.pnl)}
+        </span>
+        <span className="hidden sm:inline">
+          {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(day.pnl)}
+        </span>
+      </p>
       <TradeIndicatorDots tradeCount={day.tradeCount} />
 
       <CalendarDayTooltip

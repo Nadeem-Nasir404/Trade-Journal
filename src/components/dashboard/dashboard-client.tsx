@@ -279,12 +279,12 @@ export function DashboardClient() {
                 <CardContent>
                   {loading ? <p className="text-sm text-slate-500 dark:text-slate-400">Loading calendar...</p> : null}
                   <div className="overflow-x-auto pb-1">
-                    <div className="min-w-[640px]">
-                      <div className="grid grid-cols-7 gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => <p key={d} className="px-2 py-1">{d}</p>)}
+                    <div className="min-w-[420px] sm:min-w-[560px] lg:min-w-[640px]">
+                      <div className="grid grid-cols-7 gap-1 text-[10px] font-medium text-slate-500 sm:gap-2 sm:text-xs dark:text-slate-400">
+                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => <p key={d} className="px-1 py-1 sm:px-2">{d}</p>)}
                       </div>
-                      <div className="mt-2 grid grid-cols-7 gap-2">
-                        {Array.from({ length: firstWeekday }).map((_, idx) => <div key={`blank-${idx}`} className="min-h-24 rounded-lg border border-dashed border-slate-200 dark:border-slate-700" />)}
+                      <div className="mt-2 grid grid-cols-7 gap-1 sm:gap-2">
+                        {Array.from({ length: firstWeekday }).map((_, idx) => <div key={`blank-${idx}`} className="min-h-16 rounded-lg border border-dashed border-slate-200 sm:min-h-24 dark:border-slate-700" />)}
                         {monthDaysLimited.map((day) => (
                           <CalendarCell
                             key={day.date}
