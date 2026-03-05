@@ -77,7 +77,12 @@ export default function SettingsPage() {
               Uses `BYBIT_API_KEY` and `BYBIT_API_SECRET` from server environment variables.
             </p>
           </div>
-          <Button type="button" onClick={() => void runBybitSync()} disabled={loading} className="bg-emerald-500 text-white hover:bg-emerald-600">
+          <Button
+            type="button"
+            onClick={() => void runBybitSync()}
+            disabled={loading}
+            className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 text-white shadow-lg shadow-emerald-500/25 hover:from-emerald-600 hover:to-teal-700"
+          >
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
             {loading ? "Syncing..." : "Sync Bybit Trades"}
           </Button>

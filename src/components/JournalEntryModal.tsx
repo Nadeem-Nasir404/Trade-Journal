@@ -235,7 +235,7 @@ export function JournalEntryModal({ open, editingId, form, onChange, onClose, on
                 <Button type="button" variant="ghost" onClick={onClose}>
                   Cancel
                 </Button>
-                <Button onClick={() => void onSave()} className="bg-emerald-500 text-white hover:bg-emerald-600">
+                <Button onClick={() => void onSave()} className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700">
                   {editingId ? "Update Reflection" : "Save Reflection"}
                 </Button>
               </div>
