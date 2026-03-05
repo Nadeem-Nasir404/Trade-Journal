@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import { JetBrains_Mono, Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
 import { AuthSessionProvider } from "@/components/auth-session-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ToastProvider } from "@/components/ui/Toast";
@@ -18,6 +18,12 @@ const appMono = JetBrains_Mono({
   display: "swap",
 });
 
+const brandSans = Space_Grotesk({
+  variable: "--font-brand-sans",
+  subsets: ["latin"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Alpha Journal",
   description: "Trading journal dashboard and analytics",
@@ -26,7 +32,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${appSans.variable} ${appMono.variable} antialiased`}>
+      <body className={`${appSans.variable} ${appMono.variable} ${brandSans.variable} antialiased`}>
         <AuthSessionProvider>
           <ThemeProvider>
             <ToastProvider>{children}</ToastProvider>

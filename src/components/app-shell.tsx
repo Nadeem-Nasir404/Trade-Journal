@@ -47,7 +47,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="rounded-md bg-slate-900/5 p-1.5 dark:bg-white/5">
               <BookOpenText className="h-4 w-4 text-slate-800 dark:text-slate-100" />
             </div>
-            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Alpha Journal</p>
+            <p className="font-[var(--font-brand)] text-base font-extrabold tracking-tight text-slate-900 dark:text-slate-100">Alpha Journal</p>
           </div>
           <button
             type="button"
@@ -73,7 +73,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <div className="rounded-lg bg-slate-900/5 p-1.5 dark:bg-white/5">
                 <BookOpenText className="h-4.5 w-4.5 text-slate-800 dark:text-slate-100" />
               </div>
-              {!collapsed ? <p className="text-[15px] font-semibold tracking-tight text-slate-900 dark:text-slate-100">Alpha Journal</p> : null}
+              {!collapsed ? <p className="font-[var(--font-brand)] text-[17px] font-extrabold tracking-tight text-slate-900 dark:text-slate-100">Alpha Journal</p> : null}
             </div>
             {!collapsed ? (
               <button
@@ -152,7 +152,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <div className="rounded-lg bg-slate-900/5 p-1.5 dark:bg-white/5">
                     <BookOpenText className="h-4.5 w-4.5 text-slate-800 dark:text-slate-100" />
                   </div>
-                  <p className="text-[15px] font-semibold tracking-tight text-slate-900 dark:text-slate-100">Alpha Journal</p>
+                  <p className="font-[var(--font-brand)] text-[17px] font-extrabold tracking-tight text-slate-900 dark:text-slate-100">Alpha Journal</p>
                 </div>
                 <button
                   type="button"
