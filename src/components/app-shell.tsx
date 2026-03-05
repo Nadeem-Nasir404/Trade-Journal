@@ -11,9 +11,9 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 
 const nav = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/journal", label: "Journal", icon: NotebookPen },
   { href: "/trades", label: "Trades", icon: ScrollText },
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/ai-chat", label: "AI Chat", icon: Bot },
 ];
