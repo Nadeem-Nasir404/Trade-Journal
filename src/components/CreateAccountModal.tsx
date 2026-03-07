@@ -8,17 +8,21 @@ const BROKERS = ["FTMO", "TopStepTrader", "MyForexFunds", "The5%ers", "FundedNex
 const PLATFORMS = ["MT4", "MT5", "TradingView", "cTrader", "NinjaTrader", "ThinkOrSwim", "Webull", "Binance", "Interactive Brokers", "Other"];
 const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF"];
 const ACCOUNT_TYPES = [
-  { value: "PERSONAL", label: "Personal", icon: "wallet", desc: "Your own capital" },
-  { value: "FUNDED", label: "Funded Challenge", icon: "trophy", desc: "FTMO, Topstep, etc." },
-  { value: "DEMO", label: "Demo/Paper", icon: "demo", desc: "Practice account" },
+  { value: "PERSONAL", label: "Personal", icon: "\u{1F4B0}", desc: "Your own capital" },
+  { value: "FUNDED", label: "Funded Challenge", icon: "\u{1F3C6}", desc: "FTMO, Topstep, etc." },
+  { value: "DEMO", label: "Demo/Paper", icon: "\u{1F4DD}", desc: "Practice account" },
 ] as const;
 const ACCOUNT_ICONS = [
-  { value: "wallet", label: "Wallet" },
-  { value: "trophy", label: "Trophy" },
-  { value: "chart", label: "Chart" },
-  { value: "target", label: "Target" },
-  { value: "flash", label: "Flash" },
-  { value: "rocket", label: "Rocket" },
+  { value: "\u{1F4B0}", label: "Money Bag" },
+  { value: "\u{1F3C6}", label: "Trophy" },
+  { value: "\u{1F4DD}", label: "Memo" },
+  { value: "\u{1F4C8}", label: "Chart" },
+  { value: "\u{1F3AF}", label: "Target" },
+  { value: "\u{26A1}", label: "Flash" },
+  { value: "\u{1F680}", label: "Rocket" },
+  { value: "\u{1F48E}", label: "Diamond" },
+  { value: "\u{1F525}", label: "Fire" },
+  { value: "\u{2728}", label: "Sparkles" },
 ];
 
 type FormData = {
@@ -56,7 +60,7 @@ export function CreateAccountModal({
     startingBalance: "",
     currency: "USD",
     accountType: "PERSONAL",
-    icon: "wallet",
+    icon: "\u{1F4B0}",
     profitTarget: "",
     maxDailyLoss: "",
     maxDailyLossType: "FIXED",
@@ -136,7 +140,7 @@ export function CreateAccountModal({
                   <div className="grid grid-cols-2 gap-3">
                       {ACCOUNT_TYPES.map((type) => (
                       <button key={type.value} type="button" onClick={() => setFormData((p) => ({ ...p, accountType: type.value, icon: type.icon }))} className={`rounded-xl border-2 p-4 text-left transition-all ${formData.accountType === type.value ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20" : "border-gray-200 bg-white hover:border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600"}`}>
-                        <div className="mb-2 flex items-center gap-3"><span className="text-base font-semibold uppercase text-emerald-600 dark:text-emerald-300">{type.icon}</span><span className="font-semibold text-gray-900 dark:text-slate-100">{type.label}</span></div>
+                        <div className="mb-2 flex items-center gap-3"><span className="text-2xl">{type.icon}</span><span className="font-semibold text-gray-900 dark:text-slate-100">{type.label}</span></div>
                         <p className="text-xs text-gray-600 dark:text-slate-400">{type.desc}</p>
                       </button>
                     ))}
@@ -151,8 +155,8 @@ export function CreateAccountModal({
                   </div>
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-slate-300">Icon</label>
-                    <select value={formData.icon} onChange={(e) => setFormData((p) => ({ ...p, icon: e.target.value }))} className="w-full rounded-xl border-2 border-gray-200 px-3 py-3 text-sm focus:border-emerald-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">
-                      {ACCOUNT_ICONS.map((icon) => <option key={icon.value} value={icon.value}>{icon.label}</option>)}
+                    <select value={formData.icon} onChange={(e) => setFormData((p) => ({ ...p, icon: e.target.value }))} className="w-full rounded-xl border-2 border-gray-200 px-3 py-3 text-base focus:border-emerald-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">
+                      {ACCOUNT_ICONS.map((icon) => <option key={icon.value} value={icon.value}>{icon.value} {icon.label}</option>)}
                     </select>
                   </div>
                 </div>

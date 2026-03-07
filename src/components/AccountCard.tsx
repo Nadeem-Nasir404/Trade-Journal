@@ -48,6 +48,13 @@ const typeConfig = {
 
 function renderIcon(icon: string | null, accountType: Account["accountType"], className: string) {
   const key = (icon ?? "").toLowerCase();
+  if (icon === "\u{1F4B0}") return <span className={className}>{"\u{1F4B0}"}</span>;
+  if (icon === "\u{1F3C6}") return <span className={className}>{"\u{1F3C6}"}</span>;
+  if (icon === "\u{1F4DD}") return <span className={className}>{"\u{1F4DD}"}</span>;
+  if (icon === "\u{1F4C8}") return <span className={className}>{"\u{1F4C8}"}</span>;
+  if (icon === "\u{1F3AF}") return <span className={className}>{"\u{1F3AF}"}</span>;
+  if (icon === "\u{26A1}") return <span className={className}>{"\u{26A1}"}</span>;
+  if (icon === "\u{1F680}") return <span className={className}>{"\u{1F680}"}</span>;
   if (key === "wallet" || accountType === "PERSONAL") return <Wallet className={className} />;
   if (key === "trophy" || accountType === "FUNDED") return <Trophy className={className} />;
   if (key === "rocket") return <Rocket className={className} />;
