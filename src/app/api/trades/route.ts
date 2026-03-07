@@ -4,6 +4,7 @@ import { endOfDay, startOfDay } from "date-fns";
 import { getServerSession } from "next-auth";
 
 import { prisma } from "@/lib/prisma";
+import { ensureDefaultAccount } from "@/lib/accounts";
 import { authOptions } from "@/lib/auth";
 import { tradeFiltersSchema, tradeSchema } from "@/lib/validations/trade";
 
@@ -16,12 +17,14 @@ function normalizeNullableNumber(value: unknown) {
 
 function parseFilters(searchParams: URLSearchParams) {
   const symbols = searchParams.get("symbols")?.split(",").filter(Boolean) ?? [];
+  const accountId = searchParams.get("accountId") ?? undefined;
   const from = searchParams.get("from") ?? undefined;
   const to = searchParams.get("to") ?? undefined;
   const maxTrades = searchParams.get("maxTrades") ?? undefined;
 
   return tradeFiltersSchema.parse({
     symbols,
+    accountId,
     from,
     to,
     maxTrades,
@@ -39,6 +42,7 @@ export async function GET(request: NextRequest) {
 
     const where: Prisma.TradeWhereInput = {
       OR: [{ userId: session.user.id }, { userId: null }],
+      accountId: filters.accountId ?? undefined,
       symbol: filters.symbols.length ? { in: filters.symbols } : undefined,
       tradeDate:
         filters.from || filters.to
@@ -56,8 +60,6 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         userId: true,
-        source: true,
-        externalId: true,
         tradeDate: true,
         symbol: true,
         side: true,
@@ -74,6 +76,14 @@ export async function GET(request: NextRequest) {
         emotions: true,
         notes: true,
         journalEntryId: true,
+        accountId: true,
+        account: {
+          select: {
+            id: true,
+            name: true,
+            icon: true,
+          },
+        },
         createdAt: true,
       },
     });
@@ -95,6 +105,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    const defaultAccount = await ensureDefaultAccount(session.user.id);
     const parsed = tradeSchema.parse({
       ...body,
       entryPrice: normalizeNullableNumber(body.entryPrice),
@@ -106,6 +117,7 @@ export async function POST(request: NextRequest) {
     const trade = await prisma.trade.create({
       data: {
         userId: session.user.id,
+        accountId: parsed.accountId ?? defaultAccount.id,
         tradeDate: parsed.tradeDate,
         symbol: parsed.symbol.toUpperCase(),
         side: parsed.side,

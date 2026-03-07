@@ -17,6 +17,7 @@ import { KpiCardsSkeleton } from "@/components/ui/LoadingSkeleton";
 import { ChartWrapper, PnlLineChart, WinsLossesBarChart } from "@/components/ui/ChartWrapper";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DayViewModal } from "@/components/DayViewModal";
+import { useSelectedAccount } from "@/hooks/use-selected-account";
 import { buildCalendarMonthData, calculateKpis } from "@/lib/trades";
 import { getColorByValue } from "@/utils/kpi-metrics";
 
@@ -73,6 +74,7 @@ function toUiTrades(trades: ApiTrade[]): UiTrade[] {
 
 export function DashboardClient() {
   const router = useRouter();
+  const { selectedAccountId } = useSelectedAccount();
   const [trades, setTrades] = useState<UiTrade[]>([]);
   const [allSymbols, setAllSymbols] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,6 +88,7 @@ export function DashboardClient() {
     setLoading(true);
     const params = new URLSearchParams();
     if (filters.symbols.length) params.set("symbols", filters.symbols.join(","));
+    if (selectedAccountId) params.set("accountId", String(selectedAccountId));
     if (filters.from) params.set("from", filters.from);
     if (filters.to) params.set("to", filters.to);
     if (filters.maxTrades) params.set("maxTrades", filters.maxTrades);
@@ -102,7 +105,7 @@ export function DashboardClient() {
   useEffect(() => {
     void loadSummary();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, calendarMonth]);
+  }, [filters, calendarMonth, selectedAccountId]);
 
   const kpis = useMemo(() => calculateKpis(trades), [trades]);
   const monthDays = useMemo(() => buildCalendarMonthData(trades, calendarMonth), [trades, calendarMonth]);
@@ -258,7 +261,9 @@ export function DashboardClient() {
               <TabsTrigger value="calendar">Calendar</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
               <TabsTrigger value="performance">Performance</TabsTrigger>
-              <TabsTrigger value="coming-soon">More (Soon)</TabsTrigger>
+              <TabsTrigger value="psychology">Psychology</TabsTrigger>
+              <TabsTrigger value="risk">Risk management</TabsTrigger>
+              <TabsTrigger value="strategy">Strategy</TabsTrigger>
             </TabsList>
 
             <TabsContent value="calendar">
@@ -279,12 +284,12 @@ export function DashboardClient() {
                 <CardContent>
                   {loading ? <p className="text-sm text-slate-500 dark:text-slate-400">Loading calendar...</p> : null}
                   <div className="overflow-x-auto pb-1">
-                    <div className="min-w-[420px] sm:min-w-[560px] lg:min-w-[640px]">
-                      <div className="grid grid-cols-7 gap-1 text-[10px] font-medium text-slate-500 sm:gap-2 sm:text-xs dark:text-slate-400">
-                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => <p key={d} className="px-1 py-1 sm:px-2">{d}</p>)}
+                    <div className="min-w-[640px]">
+                      <div className="grid grid-cols-7 gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => <p key={d} className="px-2 py-1">{d}</p>)}
                       </div>
-                      <div className="mt-2 grid grid-cols-7 gap-1 sm:gap-2">
-                        {Array.from({ length: firstWeekday }).map((_, idx) => <div key={`blank-${idx}`} className="min-h-16 rounded-lg border border-dashed border-slate-200 sm:min-h-24 dark:border-slate-700" />)}
+                      <div className="mt-2 grid grid-cols-7 gap-2">
+                        {Array.from({ length: firstWeekday }).map((_, idx) => <div key={`blank-${idx}`} className="min-h-24 rounded-lg border border-dashed border-slate-200 dark:border-slate-700" />)}
                         {monthDaysLimited.map((day) => (
                           <CalendarCell
                             key={day.date}
@@ -320,14 +325,9 @@ export function DashboardClient() {
               </div>
             </TabsContent>
 
-            <TabsContent value="coming-soon">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Upcoming Modules</CardTitle>
-                  <CardDescription>Psychology, risk management, and strategy dashboards are coming soon.</CardDescription>
-                </CardHeader>
-              </Card>
-            </TabsContent>
+            {["psychology", "risk", "strategy"].map((tab) => (
+              <TabsContent key={tab} value={tab}><Card><CardHeader><CardTitle className="capitalize">{tab.replace("-", " ")}</CardTitle><CardDescription>Placeholder tab ready for future expansion.</CardDescription></CardHeader></Card></TabsContent>
+            ))}
           </Tabs>
         </div>
 

@@ -3,6 +3,7 @@ import { z } from "zod";
 
 export const tradeSchema = z.object({
   userId: z.string().trim().optional().or(z.literal("")),
+  accountId: z.coerce.number().int().positive().optional().nullable(),
   tradeDate: z.coerce.date(),
   symbol: z.string().trim().min(1).max(20),
   side: z.nativeEnum(TradeSide),
@@ -22,6 +23,7 @@ export const tradeSchema = z.object({
 
 export const tradeFiltersSchema = z.object({
   symbols: z.array(z.string()).optional().default([]),
+  accountId: z.coerce.number().int().positive().optional(),
   from: z.coerce.date().optional(),
   to: z.coerce.date().optional(),
   maxTrades: z.coerce.number().int().positive().max(500).optional(),

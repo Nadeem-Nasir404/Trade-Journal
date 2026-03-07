@@ -19,9 +19,58 @@ enum TradeStatus {
   BREAKEVEN
 }
 
+enum AccountType {
+  PERSONAL
+  FUNDED
+  DEMO
+  PROP_FIRM
+}
+
+enum AccountStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  FAILED
+  ARCHIVED
+}
+
+enum LossType {
+  PERCENTAGE
+  FIXED
+}
+
+model TradingAccount {
+  id                 Int           @id @default(autoincrement())
+  userId             String
+  name               String
+  broker             String?
+  platform           String?
+  startingBalance    Float
+  currentBalance     Float
+  currency           String        @default("USD")
+  accountType        AccountType
+  status             AccountStatus @default(ACTIVE)
+  profitTarget       Float?
+  maxDailyLoss       Float?
+  maxOverallDrawdown Float?
+  maxDailyLossType   LossType?
+  maxDrawdownType    LossType?
+  icon               String?
+  color              String?
+  notes              String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  archivedAt         DateTime?
+  trades             Trade[]
+
+  @@index([userId])
+  @@index([status])
+}
+
 model Trade {
   id             Int           @id @default(autoincrement())
   userId         String?
+  accountId      Int?
   source         String?
   externalId     String?
   tradeDate      DateTime
@@ -41,11 +90,13 @@ model Trade {
   notes          String?
   createdAt      DateTime      @default(now())
   journalEntryId Int?
+  account        TradingAccount? @relation(fields: [accountId], references: [id], onDelete: SetNull)
   journalEntry   JournalEntry? @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
 
   @@index([tradeDate])
   @@index([symbol])
   @@index([side])
+  @@index([accountId])
   @@index([journalEntryId])
   @@index([userId, source, externalId])
 }

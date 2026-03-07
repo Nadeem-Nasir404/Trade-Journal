@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, RefreshCw } from "lucide-react";
 
 import AddTradeModal, { type TradeFormTrade } from "@/components/AddTradeModal";
 import TradeListView from "@/components/TradeListView";
 import { Button } from "@/components/ui/button";
+import { useSelectedAccount } from "@/hooks/use-selected-account";
 
 type SyncResponse = {
   imported: number;
@@ -26,6 +27,7 @@ type SyncResponse = {
 
 export function TradesClient() {
   const router = useRouter();
+  const { selectedAccountId } = useSelectedAccount();
   const [trades, setTrades] = useState<TradeFormTrade[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<TradeFormTrade | null>(null);
@@ -48,9 +50,11 @@ export function TradesClient() {
     return d.toISOString().slice(0, 10);
   }
 
-  async function loadTrades() {
+  const loadTrades = useCallback(async (accountId: number | null = selectedAccountId) => {
     const maxTrades = 500;
-    const res = await fetch(`/api/trades?maxTrades=${maxTrades}`, { cache: "no-store" });
+    const params = new URLSearchParams({ maxTrades: String(maxTrades) });
+    if (accountId) params.set("accountId", String(accountId));
+    const res = await fetch(`/api/trades?${params.toString()}`, { cache: "no-store" });
     const json = (await res.json()) as { trades?: TradeFormTrade[]; message?: string; error?: string };
     if (!res.ok) {
       setLoadError(json.error || json.message || "Failed to load trades.");
@@ -59,11 +63,11 @@ export function TradesClient() {
     }
     setLoadError("");
     setTrades(json.trades ?? []);
-  }
+  }, [selectedAccountId]);
 
   useEffect(() => {
     void loadTrades();
-  }, []);
+  }, [loadTrades, selectedAccountId]);
 
   useEffect(() => {
     const saved = localStorage.getItem("bybit-last-sync-at");
@@ -73,7 +77,7 @@ export function TradesClient() {
   useEffect(() => {
     if (!open) return;
     void loadTrades();
-  }, [open]);
+  }, [loadTrades, open]);
 
   const dayTrades = useMemo(() => {
     const key = normalizeDateKey(selectedDate);

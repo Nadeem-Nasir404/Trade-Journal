@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth";
+import { ensureDefaultAccount } from "@/lib/accounts";
 import { prisma } from "@/lib/prisma";
 import { tradeSchema } from "@/lib/validations/trade";
 
@@ -44,6 +45,7 @@ export async function PATCH(request: NextRequest, context: Context) {
     const { id } = await context.params;
     const body = await request.json();
     const tradeId = Number(id);
+    const defaultAccount = await ensureDefaultAccount(session.user.id);
 
     const existing = await prisma.trade.findFirst({
       where: { id: tradeId, OR: [{ userId: session.user.id }, { userId: null }] },
@@ -66,6 +68,7 @@ export async function PATCH(request: NextRequest, context: Context) {
       where: { id: tradeId },
       data: {
         userId: session.user.id,
+        accountId: parsed.accountId ?? defaultAccount.id,
         tradeDate: parsed.tradeDate,
         symbol: parsed.symbol.toUpperCase(),
         side: parsed.side,

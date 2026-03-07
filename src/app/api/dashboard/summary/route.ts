@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
   const symbols = searchParams.get("symbols")?.split(",").filter(Boolean) ?? [];
   const from = searchParams.get("from");
   const to = searchParams.get("to");
+  const accountId = searchParams.get("accountId");
   const month = fmtMonth(searchParams.get("month"));
   const bucketParam = searchParams.get("bucket");
   const bucket: EdgeBucket = bucketParam === "week" || bucketParam === "month" ? bucketParam : "day";
@@ -37,6 +38,7 @@ export async function GET(request: NextRequest) {
 
   const where: Prisma.TradeWhereInput = {
     OR: [{ userId: session.user.id }, { userId: null }],
+    accountId: accountId ? Number(accountId) : undefined,
     symbol: symbols.length ? { in: symbols } : undefined,
     tradeDate:
       from || to

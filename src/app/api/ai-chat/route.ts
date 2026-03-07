@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
 
     const [trades, journal] = await Promise.all([
       prisma.trade.findMany({
-        where: { userId },
+        where: { userId, accountId: parsed.accountId ?? undefined },
         orderBy: { tradeDate: "desc" },
         take: 120,
         select: { symbol: true, resultUsd: true, status: true, setup: true, strategy: true, notes: true },

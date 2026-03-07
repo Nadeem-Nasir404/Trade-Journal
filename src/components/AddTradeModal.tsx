@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useSelectedAccount } from "@/hooks/use-selected-account";
 import { SymbolLogo } from "@/components/symbol-logo";
 
 type TradeStatus = "RUNNING" | "PROFIT" | "LOSS" | "BREAKEVEN";
@@ -22,9 +23,11 @@ type TradeSide = "LONG" | "SHORT";
 
 export type TradeFormTrade = {
   id: number;
-  tradeDate: string;
   source?: string | null;
   externalId?: string | null;
+  accountId?: number | null;
+  account?: { id: number; name: string; icon: string | null } | null;
+  tradeDate: string;
   symbol: string;
   side: TradeSide;
   entryPrice: number | null;
@@ -73,10 +76,13 @@ function toNum(v: string) {
 }
 
 export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, initialTrade }: Props) {
+  const { selectedAccountId, setSelectedAccountId } = useSelectedAccount();
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [symbolSuggestions, setSymbolSuggestions] = useState<string[]>([]);
+  const [accounts, setAccounts] = useState<Array<{ id: number; name: string; icon: string | null; currentBalance: number }>>([]);
   const [formData, setFormData] = useState({
+    accountId: "",
     symbol: "",
     direction: "LONG" as TradeSide,
     entry: "",
@@ -95,6 +101,7 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
     if (!initialTrade) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setFormData({
+      accountId: initialTrade.accountId ? String(initialTrade.accountId) : "",
       symbol: initialTrade.symbol,
       direction: initialTrade.side,
       entry: initialTrade.entryPrice?.toString() ?? "",
@@ -109,6 +116,48 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
       emotions: (initialTrade.emotions ?? "").split(",").map((e) => e.trim()).filter(Boolean),
     });
   }, [initialTrade]);
+
+  useEffect(() => {
+    if (!isOpen || initialTrade) return;
+    const timeoutId = window.setTimeout(() => {
+      setFormData({
+        accountId: selectedAccountId ? String(selectedAccountId) : "",
+        symbol: "",
+        direction: "LONG",
+        entry: "",
+        exit: "",
+        stopLoss: "",
+        takeProfit: "",
+        quantity: "",
+        result: "RUNNING",
+        setup: "",
+        strategy: "",
+        notes: "",
+        emotions: [],
+      });
+      setSaveError("");
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [isOpen, initialTrade, selectedAccountId]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const id = setTimeout(async () => {
+      const res = await fetch("/api/accounts?status=ACTIVE", { cache: "no-store" });
+      const json = (await res.json()) as { accounts?: Array<{ id: number; name: string; icon: string | null; currentBalance: number }> };
+      const nextAccounts = json.accounts ?? [];
+      setAccounts(nextAccounts);
+      setFormData((prev) => ({
+        ...prev,
+        accountId:
+          prev.accountId ||
+          (initialTrade?.accountId ? String(initialTrade.accountId) : "") ||
+          (selectedAccountId ? String(selectedAccountId) : "") ||
+          (nextAccounts[0] ? String(nextAccounts[0].id) : ""),
+      }));
+    }, 10);
+    return () => clearTimeout(id);
+  }, [isOpen, initialTrade?.accountId, selectedAccountId]);
 
   useEffect(() => {
     const q = formData.symbol.trim();
@@ -146,6 +195,10 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
       setSaveError("Symbol is required.");
       return;
     }
+    if (!formData.accountId.trim()) {
+      setSaveError("Account is required.");
+      return;
+    }
     if (!formData.entry.trim()) {
       setSaveError("Entry price is required.");
       return;
@@ -174,6 +227,7 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
     const resultUsd = Number((pnlPerUnit * qty).toFixed(2));
 
     const payload = {
+      accountId: Number(formData.accountId),
       tradeDate: selectedDate,
       symbol: formData.symbol,
       side: formData.direction,
@@ -201,6 +255,7 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
       setSaveError(json?.error || json?.message || "Failed to save trade.");
       return;
     }
+    setSelectedAccountId(Number(formData.accountId));
     await onSaved();
     onClose();
   }
@@ -239,6 +294,16 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
               <form onSubmit={(e) => void handleSubmit(e)} className="max-h-[calc(90vh-200px)] space-y-6 overflow-y-auto p-6">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <div className="md:col-span-2">
+                    <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Trading Account</label>
+                    <select value={formData.accountId} onChange={(e) => setFormData((p) => ({ ...p, accountId: e.target.value }))} className="mb-4 h-12 w-full rounded-xl border-2 border-slate-300 bg-white px-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white">
+                      <option value="">Select account...</option>
+                      {accounts.map((account) => (
+                        <option key={account.id} value={account.id}>
+                          {(account.icon ?? "💼")} {account.name} - ${account.currentBalance.toLocaleString()}
+                        </option>
+                      ))}
+                    </select>
+
                     <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300"><Hash className="mr-1 inline h-4 w-4" />Symbol / Ticker</label>
                     <input
                       type="text"

@@ -6,6 +6,7 @@ import { AlertCircle, Brain, Loader2, Send, Sparkles, Target, TrendingUp } from 
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useSelectedAccount } from "@/hooks/use-selected-account";
 
 type Message = {
   role: "user" | "assistant";
@@ -14,6 +15,7 @@ type Message = {
 };
 
 export function AiChatClient() {
+  const { selectedAccountId } = useSelectedAccount();
   const endRef = useRef<HTMLDivElement | null>(null);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -48,7 +50,7 @@ export function AiChatClient() {
       const res = await fetch("/api/ai-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({ message: text, accountId: selectedAccountId ?? undefined }),
       });
 
       const json = await res.json();
