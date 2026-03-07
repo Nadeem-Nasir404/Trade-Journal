@@ -8,12 +8,18 @@ const BROKERS = ["FTMO", "TopStepTrader", "MyForexFunds", "The5%ers", "FundedNex
 const PLATFORMS = ["MT4", "MT5", "TradingView", "cTrader", "NinjaTrader", "ThinkOrSwim", "Webull", "Binance", "Interactive Brokers", "Other"];
 const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF"];
 const ACCOUNT_TYPES = [
-  { value: "PERSONAL", label: "Personal", icon: "\u{1F4B0}", desc: "Your own capital" },
-  { value: "FUNDED", label: "Funded Challenge", icon: "\u{1F3C6}", desc: "FTMO, Topstep, etc." },
-  { value: "DEMO", label: "Demo/Paper", icon: "\u{1F4DD}", desc: "Practice account" },
-  { value: "PROP_FIRM", label: "Prop Firm", icon: "\u{1F3E2}", desc: "Proprietary trading" },
+  { value: "PERSONAL", label: "Personal", icon: "wallet", desc: "Your own capital" },
+  { value: "FUNDED", label: "Funded Challenge", icon: "trophy", desc: "FTMO, Topstep, etc." },
+  { value: "DEMO", label: "Demo/Paper", icon: "demo", desc: "Practice account" },
 ] as const;
-const ACCOUNT_ICONS = ["\u{1F4B0}", "\u{1F3C6}", "\u{1F4C8}", "\u{1F4B5}", "\u{1F3AF}", "\u{26A1}", "\u{1F680}", "\u{1F48E}", "\u{1F525}", "\u{2728}"];
+const ACCOUNT_ICONS = [
+  { value: "wallet", label: "Wallet" },
+  { value: "trophy", label: "Trophy" },
+  { value: "chart", label: "Chart" },
+  { value: "target", label: "Target" },
+  { value: "flash", label: "Flash" },
+  { value: "rocket", label: "Rocket" },
+];
 
 type FormData = {
   name: string;
@@ -41,6 +47,7 @@ export function CreateAccountModal({
   onCreated: () => Promise<void> | void;
 }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState("");
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -49,7 +56,7 @@ export function CreateAccountModal({
     startingBalance: "",
     currency: "USD",
     accountType: "PERSONAL",
-    icon: "\u{1F4B0}",
+    icon: "wallet",
     profitTarget: "",
     maxDailyLoss: "",
     maxDailyLossType: "FIXED",
@@ -72,6 +79,7 @@ export function CreateAccountModal({
 
   async function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault();
+    setSubmitError("");
     if (!validate()) return;
 
     setSaving(true);
@@ -90,7 +98,11 @@ export function CreateAccountModal({
       body: JSON.stringify(payload),
     });
     setSaving(false);
-    if (!res.ok) return;
+    if (!res.ok) {
+      const json = (await res.json().catch(() => null)) as { message?: string } | null;
+      setSubmitError(json?.message ?? "Failed to create account.");
+      return;
+    }
 
     await onCreated();
     onClose();
@@ -122,9 +134,9 @@ export function CreateAccountModal({
                 <div>
                   <label className="mb-3 block text-sm font-semibold text-gray-700 dark:text-slate-300">Account Type <span className="text-rose-500">*</span></label>
                   <div className="grid grid-cols-2 gap-3">
-                    {ACCOUNT_TYPES.map((type) => (
+                      {ACCOUNT_TYPES.map((type) => (
                       <button key={type.value} type="button" onClick={() => setFormData((p) => ({ ...p, accountType: type.value, icon: type.icon }))} className={`rounded-xl border-2 p-4 text-left transition-all ${formData.accountType === type.value ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20" : "border-gray-200 bg-white hover:border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600"}`}>
-                        <div className="mb-2 flex items-center gap-3"><span className="text-2xl">{type.icon}</span><span className="font-semibold text-gray-900 dark:text-slate-100">{type.label}</span></div>
+                        <div className="mb-2 flex items-center gap-3"><span className="text-base font-semibold uppercase text-emerald-600 dark:text-emerald-300">{type.icon}</span><span className="font-semibold text-gray-900 dark:text-slate-100">{type.label}</span></div>
                         <p className="text-xs text-gray-600 dark:text-slate-400">{type.desc}</p>
                       </button>
                     ))}
@@ -138,9 +150,9 @@ export function CreateAccountModal({
                     {errors.name ? <p className="mt-1 flex items-center gap-1 text-xs text-rose-600"><AlertCircle className="h-3 w-3" />{errors.name}</p> : null}
                   </div>
                   <div>
-                    <label className="mb-2 block text-sm font-semibold text-gray-700">Icon</label>
-                    <select value={formData.icon} onChange={(e) => setFormData((p) => ({ ...p, icon: e.target.value }))} className="w-full rounded-xl border-2 border-gray-200 px-2 py-3 text-center text-2xl focus:border-emerald-500 focus:outline-none">
-                      {ACCOUNT_ICONS.map((icon) => <option key={icon} value={icon}>{icon}</option>)}
+                    <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-slate-300">Icon</label>
+                    <select value={formData.icon} onChange={(e) => setFormData((p) => ({ ...p, icon: e.target.value }))} className="w-full rounded-xl border-2 border-gray-200 px-3 py-3 text-sm focus:border-emerald-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">
+                      {ACCOUNT_ICONS.map((icon) => <option key={icon.value} value={icon.value}>{icon.label}</option>)}
                     </select>
                   </div>
                 </div>
@@ -190,6 +202,11 @@ export function CreateAccountModal({
                   <label className="mb-2 block text-sm font-semibold text-gray-700">Notes (Optional)</label>
                   <textarea value={formData.notes} onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))} rows={3} className="w-full resize-none rounded-xl border-2 border-gray-200 px-4 py-3 focus:border-emerald-500 focus:outline-none" />
                 </div>
+                {submitError ? (
+                  <p className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-800 dark:bg-rose-950/30 dark:text-rose-300">
+                    {submitError}
+                  </p>
+                ) : null}
               </form>
 
               <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-slate-700 dark:bg-slate-800/60">

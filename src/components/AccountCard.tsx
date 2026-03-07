@@ -10,6 +10,10 @@ import {
   AlertTriangle,
   Target,
   Shield,
+  Wallet,
+  Trophy,
+  LineChart,
+  Rocket,
 } from "lucide-react";
 
 type Account = {
@@ -36,11 +40,19 @@ const statusConfig = {
 } as const;
 
 const typeConfig = {
-  PERSONAL: { icon: "\u{1F4B0}", bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-700 dark:text-blue-300", label: "Personal" },
-  FUNDED: { icon: "\u{1F3C6}", bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-700 dark:text-purple-300", label: "Funded" },
-  DEMO: { icon: "\u{1F4DD}", bg: "bg-gray-100 dark:bg-slate-800", text: "text-gray-700 dark:text-slate-200", label: "Demo" },
-  PROP_FIRM: { icon: "\u{1F3E2}", bg: "bg-teal-100 dark:bg-teal-900/30", text: "text-teal-700 dark:text-teal-300", label: "Prop Firm" },
+  PERSONAL: { bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-700 dark:text-blue-300", label: "Personal" },
+  FUNDED: { bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-700 dark:text-purple-300", label: "Funded" },
+  DEMO: { bg: "bg-gray-100 dark:bg-slate-800", text: "text-gray-700 dark:text-slate-200", label: "Demo" },
+  PROP_FIRM: { bg: "bg-teal-100 dark:bg-teal-900/30", text: "text-teal-700 dark:text-teal-300", label: "Prop Firm" },
 } as const;
+
+function renderIcon(icon: string | null, accountType: Account["accountType"], className: string) {
+  const key = (icon ?? "").toLowerCase();
+  if (key === "wallet" || accountType === "PERSONAL") return <Wallet className={className} />;
+  if (key === "trophy" || accountType === "FUNDED") return <Trophy className={className} />;
+  if (key === "rocket") return <Rocket className={className} />;
+  return <LineChart className={className} />;
+}
 
 export function AccountCard({
   account,
@@ -84,7 +96,9 @@ export function AccountCard({
       <div className="border-b border-gray-100 p-5 dark:border-slate-700">
         <div className="mb-3 flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="text-3xl">{account.icon || type.icon}</div>
+            <div className="rounded-lg bg-slate-100 p-2 dark:bg-slate-800">
+              {renderIcon(account.icon, account.accountType, "h-6 w-6 text-slate-700 dark:text-slate-200")}
+            </div>
             <div>
               <h3 className="text-lg font-bold text-gray-900 transition-colors group-hover:text-emerald-600 dark:text-slate-100">{account.name}</h3>
               {account.broker ? <p className="text-sm text-gray-500 dark:text-slate-400">{account.broker}</p> : null}

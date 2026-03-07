@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, Check, Plus, Settings } from "lucide-react";
+import { ChevronDown, Check, Plus, Settings, Wallet, Trophy, LineChart, Rocket } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSelectedAccount } from "@/hooks/use-selected-account";
 
@@ -14,7 +14,16 @@ type Account = {
   status: string;
   currentBalance: number;
   startingBalance: number;
+  accountType?: "PERSONAL" | "FUNDED" | "DEMO" | "PROP_FIRM";
 };
+
+function renderIcon(icon: string | null, accountType: Account["accountType"] | undefined, className: string) {
+  const key = (icon ?? "").toLowerCase();
+  if (key === "wallet" || accountType === "PERSONAL") return <Wallet className={className} />;
+  if (key === "trophy" || accountType === "FUNDED") return <Trophy className={className} />;
+  if (key === "rocket") return <Rocket className={className} />;
+  return <LineChart className={className} />;
+}
 
 export function AccountSwitcher() {
   const router = useRouter();
@@ -58,7 +67,9 @@ export function AccountSwitcher() {
   return (
     <div className="relative" ref={dropdownRef}>
       <button onClick={() => setIsOpen((v) => !v)} className="group flex items-center gap-3 rounded-xl border-2 border-gray-200 bg-white px-4 py-2.5 transition-all hover:border-emerald-300 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-emerald-500/60">
-        <div className="text-xl">{selected.icon ?? "\u{1F4B0}"}</div>
+        <div className="rounded-md bg-slate-100 p-1.5 dark:bg-slate-800">
+          {renderIcon(selected.icon, selected.accountType, "h-4 w-4 text-slate-700 dark:text-slate-200")}
+        </div>
         <div className="text-left">
           <div className="text-sm font-bold text-gray-900 transition-colors group-hover:text-emerald-600 dark:text-slate-100">{selected.name}</div>
           <div className={`text-xs font-semibold ${selectedProfit >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
@@ -83,7 +94,9 @@ export function AccountSwitcher() {
                   <button key={account.id} onClick={() => { setSelectedAccountId(account.id); setIsOpen(false); }} className={`w-full border-l-4 px-4 py-3 text-left transition-colors ${isSelected ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20" : "border-transparent hover:bg-gray-50 dark:hover:bg-slate-800"}`}>
                     <div className="flex items-center justify-between">
                       <div className="flex flex-1 items-center gap-3">
-                        <div className="text-2xl">{account.icon ?? "\u{1F4B0}"}</div>
+                        <div className="rounded-md bg-slate-100 p-1.5 dark:bg-slate-800">
+                          {renderIcon(account.icon, account.accountType, "h-4 w-4 text-slate-700 dark:text-slate-200")}
+                        </div>
                         <div className="flex-1">
                           <div className="mb-1 flex items-center gap-2">
                             <div className="font-semibold text-gray-900 dark:text-slate-100">{account.name}</div>
