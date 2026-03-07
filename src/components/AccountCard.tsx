@@ -36,10 +36,10 @@ const statusConfig = {
 } as const;
 
 const typeConfig = {
-  PERSONAL: { icon: "??", bg: "bg-blue-100", text: "text-blue-700", label: "Personal" },
-  FUNDED: { icon: "??", bg: "bg-purple-100", text: "text-purple-700", label: "Funded" },
-  DEMO: { icon: "??", bg: "bg-gray-100", text: "text-gray-700", label: "Demo" },
-  PROP_FIRM: { icon: "??", bg: "bg-teal-100", text: "text-teal-700", label: "Prop Firm" },
+  PERSONAL: { icon: "\u{1F4B0}", bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-700 dark:text-blue-300", label: "Personal" },
+  FUNDED: { icon: "\u{1F3C6}", bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-700 dark:text-purple-300", label: "Funded" },
+  DEMO: { icon: "\u{1F4DD}", bg: "bg-gray-100 dark:bg-slate-800", text: "text-gray-700 dark:text-slate-200", label: "Demo" },
+  PROP_FIRM: { icon: "\u{1F3E2}", bg: "bg-teal-100 dark:bg-teal-900/30", text: "text-teal-700 dark:text-teal-300", label: "Prop Firm" },
 } as const;
 
 export function AccountCard({
@@ -79,15 +79,15 @@ export function AccountCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.35 }}
       onClick={onSelect}
-      className="cursor-pointer rounded-2xl border-2 border-gray-200 bg-white transition-all hover:border-emerald-300 hover:shadow-lg"
+      className="cursor-pointer rounded-2xl border-2 border-gray-200 bg-white transition-all hover:border-emerald-300 hover:shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:hover:border-emerald-500/60"
     >
-      <div className="border-b border-gray-100 p-5">
+      <div className="border-b border-gray-100 p-5 dark:border-slate-700">
         <div className="mb-3 flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className="text-3xl">{account.icon || type.icon}</div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900 transition-colors group-hover:text-emerald-600">{account.name}</h3>
-              {account.broker ? <p className="text-sm text-gray-500">{account.broker}</p> : null}
+              <h3 className="text-lg font-bold text-gray-900 transition-colors group-hover:text-emerald-600 dark:text-slate-100">{account.name}</h3>
+              {account.broker ? <p className="text-sm text-gray-500 dark:text-slate-400">{account.broker}</p> : null}
             </div>
           </div>
 
@@ -98,13 +98,13 @@ export function AccountCard({
                 e.stopPropagation();
                 setShowMenu((v) => !v);
               }}
-              className="rounded-lg p-2 transition-colors hover:bg-gray-100"
+              className="rounded-lg p-2 transition-colors hover:bg-gray-100 dark:hover:bg-slate-800"
             >
-              <MoreVertical className="h-4 w-4 text-gray-400" />
+              <MoreVertical className="h-4 w-4 text-gray-400 dark:text-slate-400" />
             </button>
 
             {showMenu ? (
-              <div className="absolute right-0 top-full z-10 mt-2 w-48 rounded-xl border border-gray-200 bg-white py-2 shadow-xl">
+              <div className="absolute right-0 top-full z-10 mt-2 w-48 rounded-xl border border-gray-200 bg-white py-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
                 {onEdit ? (
                   <button
                     type="button"
@@ -113,7 +113,7 @@ export function AccountCard({
                       onEdit();
                       setShowMenu(false);
                     }}
-                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:text-slate-200 dark:hover:bg-slate-800"
                   >
                     <Edit className="h-4 w-4" />
                     Edit Account
@@ -127,7 +127,7 @@ export function AccountCard({
                       onArchive();
                       setShowMenu(false);
                     }}
-                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:text-slate-200 dark:hover:bg-slate-800"
                   >
                     <Edit className="h-4 w-4" />
                     Archive Account
@@ -140,7 +140,7 @@ export function AccountCard({
                     onDelete();
                     setShowMenu(false);
                   }}
-                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-rose-600 hover:bg-rose-50"
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-950/30"
                 >
                   <Trash2 className="h-4 w-4" />
                   Delete Account
@@ -153,18 +153,18 @@ export function AccountCard({
         <div className="flex items-center gap-2">
           <span className={`rounded-md px-2 py-1 text-xs font-semibold ${status.bg} ${status.text}`}>{status.label}</span>
           <span className={`rounded-md px-2 py-1 text-xs font-semibold ${type.bg} ${type.text}`}>{type.label}</span>
-          {account.platform ? <span className="rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-600">{account.platform}</span> : null}
+          {account.platform ? <span className="rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-600 dark:bg-slate-800 dark:text-slate-300">{account.platform}</span> : null}
         </div>
       </div>
 
-      <div className="border-b border-gray-100 p-5">
+      <div className="border-b border-gray-100 p-5 dark:border-slate-700">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <div className="mb-1 text-xs text-gray-500">Current Balance</div>
-            <div className="font-mono text-2xl font-bold text-gray-900">{account.currency === "USD" ? "$" : ""}{account.currentBalance.toLocaleString()}</div>
+            <div className="mb-1 text-xs text-gray-500 dark:text-slate-400">Current Balance</div>
+            <div className="font-mono text-2xl font-bold text-gray-900 dark:text-slate-100">{account.currency === "USD" ? "$" : ""}{account.currentBalance.toLocaleString()}</div>
           </div>
           <div>
-            <div className="mb-1 text-xs text-gray-500">Profit/Loss</div>
+            <div className="mb-1 text-xs text-gray-500 dark:text-slate-400">Profit/Loss</div>
             <div className={`font-mono text-2xl font-bold ${isProfitable ? "text-emerald-600" : "text-rose-600"}`}>
               {isProfitable ? "+" : ""}{account.currency === "USD" ? "$" : ""}{Math.abs(profit).toLocaleString()}
             </div>
@@ -176,17 +176,17 @@ export function AccountCard({
       </div>
 
       {account.accountType === "FUNDED" ? (
-        <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-5">
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-5 dark:from-purple-900/20 dark:to-pink-900/20">
           {account.profitTarget ? (
             <div className="mb-4">
               <div className="mb-2 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Target className="h-4 w-4 text-purple-600" />
-                  <span className="text-xs font-semibold text-purple-900">Profit Target</span>
+                  <span className="text-xs font-semibold text-purple-900 dark:text-purple-200">Profit Target</span>
                 </div>
-                <span className="text-xs font-bold text-purple-700">${profit.toLocaleString()} / ${account.profitTarget.toLocaleString()}</span>
+                <span className="text-xs font-bold text-purple-700 dark:text-purple-300">${profit.toLocaleString()} / ${account.profitTarget.toLocaleString()}</span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-white">
+              <div className="h-2 overflow-hidden rounded-full bg-white dark:bg-slate-800">
                 <div className={`h-full transition-all ${profitProgress && profitProgress >= 100 ? "bg-emerald-500" : "bg-purple-500"}`} style={{ width: `${profitProgress ?? 0}%` }} />
               </div>
               {profitProgress && profitProgress >= 100 ? (
@@ -203,11 +203,11 @@ export function AccountCard({
               <div className="mb-2 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Shield className="h-4 w-4 text-rose-600" />
-                  <span className="text-xs font-semibold text-rose-900">Max Drawdown</span>
+                  <span className="text-xs font-semibold text-rose-900 dark:text-rose-200">Max Drawdown</span>
                 </div>
-                <span className="text-xs font-bold text-rose-700">${Math.abs(drawdown).toLocaleString()} / ${account.maxOverallDrawdown.toLocaleString()}</span>
+                <span className="text-xs font-bold text-rose-700 dark:text-rose-300">${Math.abs(drawdown).toLocaleString()} / ${account.maxOverallDrawdown.toLocaleString()}</span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-white">
+              <div className="h-2 overflow-hidden rounded-full bg-white dark:bg-slate-800">
                 <div
                   className={`h-full transition-all ${
                     (drawdownProgress ?? 0) >= 100 ? "bg-rose-500" : (drawdownProgress ?? 0) >= 80 ? "bg-amber-500" : "bg-emerald-500"
@@ -226,18 +226,18 @@ export function AccountCard({
         </div>
       ) : null}
 
-      <div className="grid grid-cols-3 gap-4 bg-gray-50 p-4 text-center">
+      <div className="grid grid-cols-3 gap-4 bg-gray-50 p-4 text-center dark:bg-slate-800/60">
         <div>
-          <div className="mb-1 text-xs text-gray-500">Starting</div>
-          <div className="font-mono text-sm font-bold text-gray-700">${account.startingBalance.toLocaleString()}</div>
+          <div className="mb-1 text-xs text-gray-500 dark:text-slate-400">Starting</div>
+          <div className="font-mono text-sm font-bold text-gray-700 dark:text-slate-200">${account.startingBalance.toLocaleString()}</div>
         </div>
         <div>
-          <div className="mb-1 text-xs text-gray-500">ROI</div>
+          <div className="mb-1 text-xs text-gray-500 dark:text-slate-400">ROI</div>
           <div className={`font-mono text-sm font-bold ${isProfitable ? "text-emerald-600" : "text-rose-600"}`}>{isProfitable ? "+" : ""}{profitPercent.toFixed(2)}%</div>
         </div>
         <div>
-          <div className="mb-1 text-xs text-gray-500">Currency</div>
-          <div className="text-sm font-bold text-gray-700">{account.currency}</div>
+          <div className="mb-1 text-xs text-gray-500 dark:text-slate-400">Currency</div>
+          <div className="text-sm font-bold text-gray-700 dark:text-slate-200">{account.currency}</div>
         </div>
       </div>
     </motion.div>

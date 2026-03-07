@@ -8,12 +8,12 @@ const BROKERS = ["FTMO", "TopStepTrader", "MyForexFunds", "The5%ers", "FundedNex
 const PLATFORMS = ["MT4", "MT5", "TradingView", "cTrader", "NinjaTrader", "ThinkOrSwim", "Webull", "Binance", "Interactive Brokers", "Other"];
 const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF"];
 const ACCOUNT_TYPES = [
-  { value: "PERSONAL", label: "Personal", icon: "??", desc: "Your own capital" },
-  { value: "FUNDED", label: "Funded Challenge", icon: "??", desc: "FTMO, Topstep, etc." },
-  { value: "DEMO", label: "Demo/Paper", icon: "??", desc: "Practice account" },
-  { value: "PROP_FIRM", label: "Prop Firm", icon: "??", desc: "Proprietary trading" },
+  { value: "PERSONAL", label: "Personal", icon: "\u{1F4B0}", desc: "Your own capital" },
+  { value: "FUNDED", label: "Funded Challenge", icon: "\u{1F3C6}", desc: "FTMO, Topstep, etc." },
+  { value: "DEMO", label: "Demo/Paper", icon: "\u{1F4DD}", desc: "Practice account" },
+  { value: "PROP_FIRM", label: "Prop Firm", icon: "\u{1F3E2}", desc: "Proprietary trading" },
 ] as const;
-const ACCOUNT_ICONS = ["??", "??", "??", "??", "??", "?", "??", "??", "??", "?"];
+const ACCOUNT_ICONS = ["\u{1F4B0}", "\u{1F3C6}", "\u{1F4C8}", "\u{1F4B5}", "\u{1F3AF}", "\u{26A1}", "\u{1F680}", "\u{1F48E}", "\u{1F525}", "\u{2728}"];
 
 type FormData = {
   name: string;
@@ -49,7 +49,7 @@ export function CreateAccountModal({
     startingBalance: "",
     currency: "USD",
     accountType: "PERSONAL",
-    icon: "??",
+    icon: "\u{1F4B0}",
     profitTarget: "",
     maxDailyLoss: "",
     maxDailyLossType: "FIXED",
@@ -104,28 +104,28 @@ export function CreateAccountModal({
         <>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl">
-              <div className="border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-5">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-slate-900">
+              <div className="border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-5 dark:border-slate-700 dark:from-slate-800 dark:to-slate-900">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="rounded-lg bg-emerald-500 p-2"><Wallet className="h-5 w-5 text-white" /></div>
                     <div>
-                      <h2 className="text-xl font-bold text-gray-900">New Trading Account</h2>
-                      <p className="mt-0.5 text-sm text-gray-600">Set up a new account to track your trading</p>
+                      <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">New Trading Account</h2>
+                      <p className="mt-0.5 text-sm text-gray-600 dark:text-slate-400">Set up a new account to track your trading</p>
                     </div>
                   </div>
-                  <button type="button" onClick={onClose} className="rounded-lg p-2 transition-colors hover:bg-white/50"><X className="h-5 w-5 text-gray-600" /></button>
+                  <button type="button" onClick={onClose} className="rounded-lg p-2 transition-colors hover:bg-white/50 dark:hover:bg-slate-800"><X className="h-5 w-5 text-gray-600 dark:text-slate-300" /></button>
                 </div>
               </div>
 
               <form onSubmit={(e) => void handleSubmit(e)} className="max-h-[calc(90vh-180px)] space-y-6 overflow-y-auto p-6">
                 <div>
-                  <label className="mb-3 block text-sm font-semibold text-gray-700">Account Type <span className="text-rose-500">*</span></label>
+                  <label className="mb-3 block text-sm font-semibold text-gray-700 dark:text-slate-300">Account Type <span className="text-rose-500">*</span></label>
                   <div className="grid grid-cols-2 gap-3">
                     {ACCOUNT_TYPES.map((type) => (
-                      <button key={type.value} type="button" onClick={() => setFormData((p) => ({ ...p, accountType: type.value, icon: type.icon }))} className={`rounded-xl border-2 p-4 text-left transition-all ${formData.accountType === type.value ? "border-emerald-500 bg-emerald-50" : "border-gray-200 bg-white hover:border-gray-300"}`}>
-                        <div className="mb-2 flex items-center gap-3"><span className="text-2xl">{type.icon}</span><span className="font-semibold text-gray-900">{type.label}</span></div>
-                        <p className="text-xs text-gray-600">{type.desc}</p>
+                      <button key={type.value} type="button" onClick={() => setFormData((p) => ({ ...p, accountType: type.value, icon: type.icon }))} className={`rounded-xl border-2 p-4 text-left transition-all ${formData.accountType === type.value ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20" : "border-gray-200 bg-white hover:border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600"}`}>
+                        <div className="mb-2 flex items-center gap-3"><span className="text-2xl">{type.icon}</span><span className="font-semibold text-gray-900 dark:text-slate-100">{type.label}</span></div>
+                        <p className="text-xs text-gray-600 dark:text-slate-400">{type.desc}</p>
                       </button>
                     ))}
                   </div>
@@ -192,8 +192,8 @@ export function CreateAccountModal({
                 </div>
               </form>
 
-              <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-6 py-4">
-                <button type="button" onClick={onClose} className="rounded-lg px-5 py-2.5 font-medium text-gray-600 transition-colors hover:text-gray-900">Cancel</button>
+              <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-slate-700 dark:bg-slate-800/60">
+                <button type="button" onClick={onClose} className="rounded-lg px-5 py-2.5 font-medium text-gray-600 transition-colors hover:text-gray-900 dark:text-slate-300 dark:hover:text-slate-100">Cancel</button>
                 <button type="button" onClick={() => void handleSubmit()} disabled={saving} className="rounded-lg bg-emerald-500 px-8 py-2.5 font-semibold text-white shadow-lg shadow-emerald-500/30 transition-colors hover:bg-emerald-600 disabled:opacity-50">
                   {saving ? "Creating..." : "Create Account"}
                 </button>
