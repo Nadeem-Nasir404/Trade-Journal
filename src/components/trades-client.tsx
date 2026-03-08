@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, RefreshCw } from "lucide-react";
+import { CheckCircle2, ChevronDown, RefreshCw } from "lucide-react";
 import { addDays, format, parseISO } from "date-fns";
 
 import AddTradeModal, { type TradeFormTrade } from "@/components/AddTradeModal";
@@ -39,6 +39,7 @@ export function TradesClient() {
   const [syncResult, setSyncResult] = useState<SyncResponse | null>(null);
   const [forceSync, setForceSync] = useState(false);
   const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
+  const [syncOpen, setSyncOpen] = useState(false);
 
   function normalizeDateKey(value: string) {
     if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
@@ -148,24 +149,34 @@ export function TradesClient() {
             <Button type="button" variant="outline" className="h-10" onClick={() => shiftSelectedDate(1)}>
               Next
             </Button>
-            <Button
-              type="button"
-              onClick={() => void runBybitSync()}
-              disabled={syncLoading}
-              className="h-10 bg-emerald-500 text-white hover:bg-emerald-600"
-            >
-              <RefreshCw className={`h-4 w-4 ${syncLoading ? "animate-spin" : ""}`} />
-              {syncLoading ? "Syncing..." : "Sync Bybit"}
+            <Button type="button" variant="outline" className="h-10" onClick={() => setSyncOpen((v) => !v)}>
+              Bybit Sync
+              <ChevronDown className={`h-4 w-4 transition-transform ${syncOpen ? "rotate-180" : ""}`} />
             </Button>
           </div>
         </div>
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
-          <label className="inline-flex items-center gap-2">
-            <input type="checkbox" checked={forceSync} onChange={(e) => setForceSync(e.target.checked)} className="h-4 w-4 rounded border-slate-400" />
-            Force re-import/update existing Bybit trades
-          </label>
-          {lastSyncAt ? <p>Last sync: {new Date(lastSyncAt).toLocaleString()}</p> : <p>Last sync: never</p>}
-        </div>
+        {syncOpen ? (
+          <div className="mt-3 rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900/70">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                onClick={() => void runBybitSync()}
+                disabled={syncLoading}
+                className="h-10 bg-emerald-500 text-white hover:bg-emerald-600"
+              >
+                <RefreshCw className={`h-4 w-4 ${syncLoading ? "animate-spin" : ""}`} />
+                {syncLoading ? "Syncing..." : "Sync Bybit"}
+              </Button>
+              <label className="inline-flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                <input type="checkbox" checked={forceSync} onChange={(e) => setForceSync(e.target.checked)} className="h-4 w-4 rounded border-slate-400" />
+                Force re-import/update existing Bybit trades
+              </label>
+            </div>
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+              {lastSyncAt ? `Last sync: ${new Date(lastSyncAt).toLocaleString()}` : "Last sync: never"}
+            </p>
+          </div>
+        ) : null}
         {syncResult ? (
           <div className="mt-3 rounded-lg border border-emerald-400/30 bg-emerald-500/10 p-3 text-sm text-emerald-700 dark:text-emerald-300">
             <p className="inline-flex items-center gap-2 font-semibold"><CheckCircle2 className="h-4 w-4" />Bybit sync completed</p>
