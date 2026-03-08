@@ -19,6 +19,7 @@ export const tradeSchema = z.object({
   strategy: z.string().trim().max(80).optional().or(z.literal("")),
   emotions: z.string().trim().max(240).optional().or(z.literal("")),
   notes: z.string().trim().max(4000).optional().or(z.literal("")),
+  screenshots: z.array(z.string().trim().min(1)).optional().default([]),
 });
 
 export const tradeFiltersSchema = z.object({

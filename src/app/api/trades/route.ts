@@ -75,6 +75,7 @@ export async function GET(request: NextRequest) {
         strategy: true,
         emotions: true,
         notes: true,
+        screenshots: true,
         journalEntryId: true,
         accountId: true,
         account: {
@@ -133,6 +134,7 @@ export async function POST(request: NextRequest) {
         strategy: parsed.strategy || null,
         emotions: parsed.emotions || null,
         notes: parsed.notes || null,
+        screenshots: parsed.screenshots ?? [],
       },
     });
 

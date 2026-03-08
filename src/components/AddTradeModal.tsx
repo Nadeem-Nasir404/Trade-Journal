@@ -17,6 +17,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { useSelectedAccount } from "@/hooks/use-selected-account";
 import { SymbolLogo } from "@/components/symbol-logo";
+import { AnnotationEditor } from "@/components/AnnotationEditor";
+import { ScreenshotUpload, type TradeScreenshot } from "@/components/ScreenshotUpload";
 
 type TradeStatus = "RUNNING" | "PROFIT" | "LOSS" | "BREAKEVEN";
 type TradeSide = "LONG" | "SHORT";
@@ -42,6 +44,7 @@ export type TradeFormTrade = {
   strategy: string | null;
   emotions: string | null;
   notes: string | null;
+  screenshots?: string[];
   journalEntryId?: number | null;
 };
 
@@ -81,6 +84,8 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
   const [saveError, setSaveError] = useState("");
   const [symbolSuggestions, setSymbolSuggestions] = useState<string[]>([]);
   const [accounts, setAccounts] = useState<Array<{ id: number; name: string; icon: string | null; currentBalance: number }>>([]);
+  const [screenshots, setScreenshots] = useState<TradeScreenshot[]>([]);
+  const [annotating, setAnnotating] = useState<TradeScreenshot | null>(null);
   const [formData, setFormData] = useState({
     accountId: "",
     symbol: "",
@@ -115,6 +120,7 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
       notes: initialTrade.notes ?? "",
       emotions: (initialTrade.emotions ?? "").split(",").map((e) => e.trim()).filter(Boolean),
     });
+    setScreenshots((initialTrade.screenshots ?? []).map((url, idx) => ({ id: `${idx}-${url}`, preview: url, name: `Screenshot ${idx + 1}`, type: "link", url })));
   }, [initialTrade]);
 
   useEffect(() => {
@@ -136,6 +142,7 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
         emotions: [],
       });
       setSaveError("");
+      setScreenshots([]);
     }, 0);
     return () => window.clearTimeout(timeoutId);
   }, [isOpen, initialTrade, selectedAccountId]);
@@ -243,7 +250,29 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
       strategy: formData.strategy,
       emotions: formData.emotions.join(", "),
       notes: formData.notes,
+      screenshots: [] as string[],
     };
+
+    const uploadedUrls: string[] = [];
+    for (const shot of screenshots) {
+      if (shot.file) {
+        const uploadData = new FormData();
+        uploadData.append("file", shot.file);
+        const uploadRes = await fetch("/api/upload", { method: "POST", body: uploadData });
+        if (!uploadRes.ok) {
+          const uploadJson = (await uploadRes.json().catch(() => null)) as { message?: string } | null;
+          setSaveError(uploadJson?.message ?? "Failed to upload screenshot.");
+          return;
+        }
+        const uploadJson = (await uploadRes.json()) as { url: string };
+        uploadedUrls.push(uploadJson.url);
+      } else if (shot.url) {
+        uploadedUrls.push(shot.url);
+      } else if (shot.preview.startsWith("/uploads/")) {
+        uploadedUrls.push(shot.preview);
+      }
+    }
+    payload.screenshots = uploadedUrls;
 
     setSaving(true);
     const method = initialTrade ? "PATCH" : "POST";
@@ -422,6 +451,15 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
                   <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Trade Notes</label>
                   <textarea value={formData.notes} onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))} placeholder="What was your thesis? What went well? What could be improved?" rows={4} className="w-full resize-none rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white" />
                 </div>
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Screenshots (Optional)</label>
+                  <ScreenshotUpload
+                    screenshots={screenshots}
+                    onChange={setScreenshots}
+                    maxFiles={10}
+                    onAnnotate={(shot) => setAnnotating(shot)}
+                  />
+                </div>
                 {saveError ? (
                   <p className="rounded-lg border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-600 dark:text-rose-300">
                     {saveError}
@@ -437,6 +475,24 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
               </div>
             </motion.div>
           </div>
+          {annotating ? (
+            <AnnotationEditor
+              image={annotating.preview}
+              onClose={() => setAnnotating(null)}
+              onSave={(blob) => {
+                const file = new File([blob], "annotated.png", { type: "image/png" });
+                const preview = URL.createObjectURL(file);
+                setScreenshots((prev) =>
+                  prev.map((s) =>
+                    s.id === annotating.id
+                      ? { ...s, file, preview, name: "Annotated Screenshot", type: "upload", url: undefined }
+                      : s,
+                  ),
+                );
+                setAnnotating(null);
+              }}
+            />
+          ) : null}
         </>
       ) : null}
     </AnimatePresence>

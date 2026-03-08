@@ -88,6 +88,7 @@ model Trade {
   strategy       String?
   emotions       String?
   notes          String?
+  screenshots    String[]      @default([])
   createdAt      DateTime      @default(now())
   journalEntryId Int?
   account        TradingAccount? @relation(fields: [accountId], references: [id], onDelete: SetNull)

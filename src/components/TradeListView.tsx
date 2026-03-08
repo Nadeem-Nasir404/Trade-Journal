@@ -20,6 +20,7 @@ import {
 import type { TradeFormTrade } from "@/components/AddTradeModal";
 import { TradesEmptyState } from "@/components/BeautifulEmptyStates";
 import { SymbolLogo } from "@/components/symbol-logo";
+import { TradeRecapCard } from "@/components/TradeRecapCard";
 
 type ResultKey = "WIN" | "LOSS" | "BREAKEVEN" | "PENDING";
 
@@ -66,6 +67,7 @@ export default function TradeListView({
   onViewJournal?: (journalEntryId: number) => void;
 }) {
   const [selectedTrade, setSelectedTrade] = useState<TradeFormTrade | null>(null);
+  const [recapTrade, setRecapTrade] = useState<TradeFormTrade | null>(null);
 
   const daySummary = useMemo(() => {
     const mapped = trades.map((t) => ({ ...t, result: toResultKey(t.status), riskReward: calcRr(t), pnl: t.resultUsd }));
@@ -142,6 +144,7 @@ export default function TradeListView({
               onViewJournal={() => {
                 if (trade.journalEntryId) onViewJournal?.(trade.journalEntryId);
               }}
+              onRecap={() => setRecapTrade(trade)}
             />
           ))}
         </div>
@@ -149,6 +152,13 @@ export default function TradeListView({
 
       {selectedTrade ? (
         <div className="hidden">{selectedTrade.id}</div>
+      ) : null}
+      {recapTrade ? (
+        <TradeRecapCard
+          trade={recapTrade}
+          screenshot={recapTrade.screenshots?.[0]}
+          onClose={() => setRecapTrade(null)}
+        />
       ) : null}
     </div>
   );
@@ -162,6 +172,7 @@ function TradeCard({
   onView,
   onAddJournal,
   onViewJournal,
+  onRecap,
 }: {
   trade: TradeFormTrade;
   delay: number;
@@ -170,6 +181,7 @@ function TradeCard({
   onView: () => void;
   onAddJournal: () => void;
   onViewJournal: () => void;
+  onRecap: () => void;
 }) {
   const result = toResultKey(trade.status);
   const config = getResultConfig(result);
@@ -264,6 +276,9 @@ function TradeCard({
                 Add Journal
               </button>
             ) : null}
+            <button onClick={onRecap} className="rounded-lg border border-purple-500/30 bg-purple-500/10 px-3 py-2 text-sm font-medium text-purple-500 transition-colors hover:bg-purple-500/20 dark:text-purple-300">
+              Recap Card
+            </button>
           </div>
 
           <div className="flex items-center gap-2 self-end sm:self-auto">
