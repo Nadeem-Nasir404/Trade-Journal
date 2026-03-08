@@ -140,8 +140,7 @@ export function TradesClient() {
             <Button
               type="button"
               variant="outline"
-              size="icon"
-              className="h-8 w-8"
+              className="h-8 w-8 px-0"
               onClick={() => setSyncOpen((v) => !v)}
               title="Bybit sync"
               aria-label="Bybit sync"

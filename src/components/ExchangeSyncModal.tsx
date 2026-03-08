@@ -1,4 +1,4 @@
-"use client";
+ï»¿"use client";
 
 import { useMemo, useState } from "react";
 import { ArrowLeft, Check, Eye, KeyRound, Link2, RefreshCw, X } from "lucide-react";
@@ -88,9 +88,7 @@ export function ExchangeSyncModal({
           <div className="space-y-5 px-6 py-5">
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Connect Exchange</p>
-              <p className="mb-3 text-lg text-slate-300">
-                <span className="mr-2 text-sky-400">•</span>Centralized Exchanges (CEX)
-              </p>
+              <p className="mb-3 text-lg text-slate-300"><span className="mr-2 text-sky-400">â€¢</span>Centralized Exchanges (CEX)</p>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 {CEX.map((item) => (
                   <button
@@ -115,9 +113,7 @@ export function ExchangeSyncModal({
             </div>
 
             <div>
-              <p className="mb-3 text-lg text-slate-300">
-                <span className="mr-2 text-emerald-400">•</span>Decentralized Exchanges (DEX)
-              </p>
+              <p className="mb-3 text-lg text-slate-300"><span className="mr-2 text-emerald-400">â€¢</span>Decentralized Exchanges (DEX)</p>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 {DEX.map((item) => (
                   <button
@@ -141,9 +137,7 @@ export function ExchangeSyncModal({
             <div className="rounded-xl border border-emerald-400/20 bg-emerald-500/5 px-4 py-3 text-sm text-slate-300">
               <p className="inline-flex items-center gap-2">
                 <Check className="h-4 w-4 text-emerald-400" />
-                <span>
-                  <span className="font-semibold text-emerald-300">Read-only access only.</span> Alpha Journal can only read your trade history.
-                </span>
+                <span><span className="font-semibold text-emerald-300">Read-only access only.</span> Alpha Journal can only read your trade history.</span>
               </p>
             </div>
           </div>
