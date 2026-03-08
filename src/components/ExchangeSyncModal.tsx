@@ -68,14 +68,14 @@ export function ExchangeSyncModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-[820px] overflow-hidden rounded-3xl border border-white/15 bg-[#0b0d16] text-white shadow-2xl">
+      <div className="w-full max-w-[940px] overflow-hidden rounded-3xl border border-white/15 bg-[#0b0d16] text-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-violet-500/20 p-2.5 text-violet-300">
+            <div className="rounded-xl bg-emerald-500/20 p-2.5 text-emerald-300">
               <Link2 className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold">Exchange Sync</h2>
+              <h2 className="text-4xl font-bold">Exchange Sync</h2>
               <p className="text-base text-slate-400">Auto-import trades from exchanges</p>
             </div>
           </div>
@@ -97,12 +97,12 @@ export function ExchangeSyncModal({
                     onClick={() => setSelectedExchange(item)}
                     className={cn(
                       "rounded-2xl border px-4 py-3 text-left transition",
-                      item.status === "active" ? "border-violet-400/35 bg-white/5 hover:bg-white/10" : "border-white/10 bg-white/[0.02] hover:bg-white/[0.06]",
+                      item.status === "active" ? "border-emerald-400/35 bg-white/5 hover:bg-white/10" : "border-white/10 bg-white/[0.02] hover:bg-white/[0.06]",
                     )}
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-xl font-semibold">{item.name}</div>
+                        <div className="text-2xl font-semibold">{item.name}</div>
                         <div className="text-sm text-slate-400">{item.subtitle}</div>
                       </div>
                       {item.status === "soon" ? <span className="text-xs text-slate-500">Soon</span> : null}
@@ -124,7 +124,7 @@ export function ExchangeSyncModal({
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-xl font-semibold">{item.name}</div>
+                        <div className="text-2xl font-semibold">{item.name}</div>
                         <div className="text-sm text-slate-400">{item.subtitle}</div>
                       </div>
                       <span className="text-xs text-slate-500">Soon</span>
@@ -148,20 +148,20 @@ export function ExchangeSyncModal({
               Back to exchanges
             </button>
 
-            <a href={settingsLink} target="_blank" rel="noreferrer" className="block rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-violet-300 hover:bg-white/[0.06]">
+            <a href={settingsLink} target="_blank" rel="noreferrer" className="block rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-emerald-300 hover:bg-white/[0.06]">
               Open {selectedExchange.name} API Settings
             </a>
 
             <div>
               <label className="mb-1 block text-sm text-slate-300">Label (optional)</label>
-              <input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="e.g. Main Account" className="h-11 w-full rounded-xl border border-white/10 bg-white/[0.02] px-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-violet-400/50" />
+              <input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="e.g. Main Account" className="h-11 w-full rounded-xl border border-white/10 bg-white/[0.02] px-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-emerald-400/50" />
             </div>
 
             <div>
               <label className="mb-1 block text-sm text-slate-300">API Key</label>
               <div className="relative">
                 <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-                <input value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="Enter your API key" className="h-11 w-full rounded-xl border border-white/10 bg-white/[0.02] pl-10 pr-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-violet-400/50" />
+                <input value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="Enter your API key" className="h-11 w-full rounded-xl border border-white/10 bg-white/[0.02] pl-10 pr-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-emerald-400/50" />
               </div>
             </div>
 
@@ -169,7 +169,7 @@ export function ExchangeSyncModal({
               <label className="mb-1 block text-sm text-slate-300">API Secret</label>
               <div className="relative">
                 <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-                <input type={showSecret ? "text" : "password"} value={apiSecret} onChange={(e) => setApiSecret(e.target.value)} placeholder="Enter your API secret" className="h-11 w-full rounded-xl border border-white/10 bg-white/[0.02] pl-10 pr-10 text-sm text-white outline-none placeholder:text-slate-500 focus:border-violet-400/50" />
+                <input type={showSecret ? "text" : "password"} value={apiSecret} onChange={(e) => setApiSecret(e.target.value)} placeholder="Enter your API secret" className="h-11 w-full rounded-xl border border-white/10 bg-white/[0.02] pl-10 pr-10 text-sm text-white outline-none placeholder:text-slate-500 focus:border-emerald-400/50" />
                 <button type="button" onClick={() => setShowSecret((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
                   <Eye className="h-4 w-4" />
                 </button>
@@ -178,7 +178,7 @@ export function ExchangeSyncModal({
 
             <div>
               <label className="mb-1 block text-sm text-slate-300">Link to Account</label>
-              <select value={accountLink} onChange={(e) => setAccountLink(e.target.value)} className="h-11 w-full rounded-xl border border-white/10 bg-white/[0.02] px-3 text-sm text-white outline-none focus:border-violet-400/50">
+              <select value={accountLink} onChange={(e) => setAccountLink(e.target.value)} className="h-11 w-full rounded-xl border border-white/10 bg-white/[0.02] px-3 text-sm text-white outline-none focus:border-emerald-400/50">
                 <option value="" className="bg-slate-900">Select account...</option>
                 {selectedAccountId ? <option value={String(selectedAccountId)} className="bg-slate-900">Current account (ID: {selectedAccountId})</option> : null}
               </select>
@@ -197,7 +197,7 @@ export function ExchangeSyncModal({
               <Button type="button" variant="outline" className="h-10 border-white/15 bg-white/[0.02] text-slate-200 hover:bg-white/10">
                 Test Connection
               </Button>
-              <Button type="button" onClick={onSyncBybit} disabled={connectDisabled} className="h-10 bg-violet-500 text-white hover:bg-violet-600 disabled:opacity-50">
+              <Button type="button" onClick={onSyncBybit} disabled={connectDisabled} className="h-10 bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50">
                 <RefreshCw className={cn("h-4 w-4", syncLoading && "animate-spin")} />
                 {syncLoading ? "Syncing..." : isBybit ? "Save & Connect" : "Coming soon"}
               </Button>

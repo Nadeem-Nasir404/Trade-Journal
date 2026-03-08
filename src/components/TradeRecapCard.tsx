@@ -4,11 +4,6 @@ import { useRef, useState } from "react";
 import { Check, Copy, Download, Share2, X } from "lucide-react";
 import html2canvas from "html2canvas";
 
-const THEMES = [
-  { id: "glass", name: "Glass", description: "Gradient with glass effects" },
-  { id: "bold", name: "Bold", description: "Left-aligned, vertical brand" },
-] as const;
-
 export function TradeRecapCard({
   trade,
   screenshot,
@@ -31,7 +26,6 @@ export function TradeRecapCard({
   onClose: () => void;
 }) {
   const cardRef = useRef<HTMLDivElement | null>(null);
-  const [theme, setTheme] = useState<(typeof THEMES)[number]>(THEMES[0]);
   const [copied, setCopied] = useState(false);
   const [generating, setGenerating] = useState(false);
   const canShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
@@ -81,7 +75,7 @@ export function TradeRecapCard({
       <div className="max-h-[92vh] w-full max-w-5xl overflow-auto rounded-3xl border border-white/15 bg-[#090b14] shadow-2xl">
         <div className="flex items-center justify-between border-b border-white/10 px-8 py-6">
           <div className="flex items-center gap-4">
-            <div className="rounded-2xl bg-violet-500 p-3">
+            <div className="rounded-2xl bg-emerald-500 p-3">
               <Share2 className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -94,26 +88,13 @@ export function TradeRecapCard({
           </button>
         </div>
 
-        <div className="border-b border-white/10 px-8 py-6">
-          <div className="mx-auto flex w-fit items-center gap-3 rounded-2xl bg-white/5 p-2">
-            {THEMES.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setTheme(t)}
-                className={`rounded-xl px-8 py-4 text-left transition ${
-                  theme.id === t.id ? "bg-violet-500 text-white" : "bg-white/5 text-slate-400 hover:bg-white/10"
-                }`}
-              >
-                <div className="text-2xl font-bold">{t.name}</div>
-                <div className="text-base opacity-85">{t.description}</div>
-              </button>
-            ))}
-          </div>
+        <div className="border-b border-white/10 px-8 py-4">
+          <p className="text-center text-sm font-medium text-emerald-300">Glass Style</p>
         </div>
 
         <div className="p-8">
           <div ref={cardRef} className="relative mx-auto max-w-[860px] overflow-hidden rounded-[28px] border border-white/10 bg-[#070b14] text-white shadow-2xl">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(139,92,246,0.16),transparent_45%),radial-gradient(circle_at_90%_20%,rgba(239,68,68,0.12),transparent_30%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(16,185,129,0.16),transparent_45%),radial-gradient(circle_at_90%_20%,rgba(14,165,233,0.12),transparent_30%)]" />
             <div className="relative p-8 sm:p-12">
               <div className="mb-8 flex items-start justify-between">
                 <div className="space-y-2">
@@ -121,7 +102,7 @@ export function TradeRecapCard({
                   <div className="text-2xl text-slate-300">{trade.side}</div>
                   {trade.setup ? <div className="text-xl text-slate-400">{trade.setup}</div> : null}
                 </div>
-                <div className="text-right text-xl text-violet-400">{theme.id === "bold" ? "ALPHA JOURNAL" : "ALPHA"}</div>
+                <div className="text-right text-xl text-emerald-400">ALPHA JOURNAL</div>
               </div>
 
               <div className={`text-8xl font-bold tracking-tight ${isProfitable ? "text-emerald-400" : "text-rose-500"}`}>
@@ -176,7 +157,7 @@ export function TradeRecapCard({
               Share
             </button>
           ) : null}
-          <button onClick={() => void download()} disabled={generating} className="flex items-center gap-2 rounded-xl bg-violet-500 px-6 py-3 font-semibold text-white hover:bg-violet-600">
+          <button onClick={() => void download()} disabled={generating} className="flex items-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 font-semibold text-white hover:bg-emerald-600">
             <Download className="h-4 w-4" />
             {generating ? "Generating..." : "Download"}
           </button>

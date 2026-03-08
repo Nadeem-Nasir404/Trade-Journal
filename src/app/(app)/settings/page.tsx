@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle2, RefreshCw } from "lucide-react";
+import { CheckCircle2, Link2, RefreshCw } from "lucide-react";
 
+import { ExchangeSyncModal } from "@/components/ExchangeSyncModal";
 import { Button } from "@/components/ui/button";
+import { useSelectedAccount } from "@/hooks/use-selected-account";
 
 type SyncResponse = {
   imported: number;
@@ -22,11 +24,13 @@ type SyncResponse = {
 };
 
 export default function SettingsPage() {
+  const { selectedAccountId } = useSelectedAccount();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SyncResponse | null>(null);
   const [error, setError] = useState("");
   const [force, setForce] = useState(false);
   const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
+  const [exchangeModalOpen, setExchangeModalOpen] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("bybit-last-sync-at");
@@ -87,6 +91,17 @@ export default function SettingsPage() {
             {loading ? "Syncing..." : "Sync Bybit Trades"}
           </Button>
         </div>
+        <div className="mb-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setExchangeModalOpen(true)}
+            className="h-10 border-emerald-500/40 bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/20 dark:text-emerald-300"
+          >
+            <Link2 className="h-4 w-4" />
+            Open Exchange Sync
+          </Button>
+        </div>
 
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
           <label className="inline-flex items-center gap-2">
@@ -115,6 +130,16 @@ export default function SettingsPage() {
           </div>
         ) : null}
       </div>
+      <ExchangeSyncModal
+        open={exchangeModalOpen}
+        onClose={() => setExchangeModalOpen(false)}
+        onSyncBybit={() => void runBybitSync()}
+        syncLoading={loading}
+        forceSync={force}
+        setForceSync={setForce}
+        lastSyncAt={lastSyncAt}
+        selectedAccountId={selectedAccountId}
+      />
     </div>
   );
 }

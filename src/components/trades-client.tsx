@@ -6,7 +6,6 @@ import { CheckCircle2, RefreshCw } from "lucide-react";
 import { addDays, format, parseISO } from "date-fns";
 
 import AddTradeModal, { type TradeFormTrade } from "@/components/AddTradeModal";
-import { ExchangeSyncModal } from "@/components/ExchangeSyncModal";
 import TradeListView from "@/components/TradeListView";
 import { Button } from "@/components/ui/button";
 import { useSelectedAccount } from "@/hooks/use-selected-account";
@@ -38,9 +37,6 @@ export function TradesClient() {
   const [syncLoading, setSyncLoading] = useState(false);
   const [syncError, setSyncError] = useState("");
   const [syncResult, setSyncResult] = useState<SyncResponse | null>(null);
-  const [forceSync, setForceSync] = useState(false);
-  const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
-  const [syncOpen, setSyncOpen] = useState(false);
 
   function normalizeDateKey(value: string) {
     if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
@@ -73,11 +69,6 @@ export function TradesClient() {
   }, [loadTrades, selectedAccountId]);
 
   useEffect(() => {
-    const saved = localStorage.getItem("bybit-last-sync-at");
-    if (saved) setLastSyncAt(saved);
-  }, []);
-
-  useEffect(() => {
     if (!open) return;
     void loadTrades();
   }, [loadTrades, open]);
@@ -103,7 +94,7 @@ export function TradesClient() {
     setSyncError("");
     setSyncResult(null);
     try {
-      const res = await fetch(`/api/integrations/bybit/sync${forceSync ? "?force=1" : ""}`, { method: "POST" });
+      const res = await fetch("/api/integrations/bybit/sync", { method: "POST" });
       const contentType = res.headers.get("content-type") || "";
       const json = (contentType.includes("application/json")
         ? await res.json()
@@ -119,9 +110,6 @@ export function TradesClient() {
         return;
       }
       setSyncResult(json);
-      const now = new Date().toISOString();
-      setLastSyncAt(now);
-      localStorage.setItem("bybit-last-sync-at", now);
       await loadTrades();
     } catch {
       setSyncError("Unable to reach sync endpoint.");
@@ -139,13 +127,14 @@ export function TradesClient() {
             <label htmlFor="trade-day" className="text-sm font-medium text-slate-600 dark:text-slate-300">Selected Day</label>
             <Button
               type="button"
-              variant="outline"
-              className="h-8 w-8 px-0"
-              onClick={() => setSyncOpen((v) => !v)}
-              title="Bybit sync"
-              aria-label="Bybit sync"
+              className="h-8 rounded-lg bg-emerald-500 px-3 text-white hover:bg-emerald-600"
+              onClick={() => void runBybitSync()}
+              disabled={syncLoading}
+              title="Sync trades"
+              aria-label="Sync trades"
             >
               <RefreshCw className={`h-4 w-4 ${syncLoading ? "animate-spin" : ""}`} />
+              <span className="ml-1 text-xs font-semibold">{syncLoading ? "Syncing" : "Sync"}</span>
             </Button>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -212,16 +201,6 @@ export function TradesClient() {
           await loadTrades();
           setEditing(null);
         }}
-      />
-      <ExchangeSyncModal
-        open={syncOpen}
-        onClose={() => setSyncOpen(false)}
-        onSyncBybit={() => void runBybitSync()}
-        syncLoading={syncLoading}
-        forceSync={forceSync}
-        setForceSync={setForceSync}
-        lastSyncAt={lastSyncAt}
-        selectedAccountId={selectedAccountId}
       />
     </div>
   );

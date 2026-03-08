@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import { BarChart3, Bot, BriefcaseBusiness, LayoutDashboard, Menu, NotebookPen, PanelLeftClose, PanelLeftOpen, ScrollText, X } from "lucide-react";
+import { useState } from "react";
+import { BarChart3, Bot, BriefcaseBusiness, LayoutDashboard, Menu, NotebookPen, ScrollText, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { AccountMenu } from "@/components/account-menu";
@@ -24,25 +24,9 @@ const nav = [
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const prefersReducedMotion = useReducedMotion();
-  const [collapsed, setCollapsed] = useState(false);
   const [sidebarHovered, setSidebarHovered] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const sidebarExpanded = !collapsed || sidebarHovered;
-
-  useEffect(() => {
-    const saved = localStorage.getItem("sidebar-collapsed");
-    // Persisted UI preference hydration.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCollapsed(saved === "1");
-  }, []);
-
-  function toggleSidebar() {
-    setCollapsed((prev) => {
-      const next = !prev;
-      localStorage.setItem("sidebar-collapsed", next ? "1" : "0");
-      return next;
-    });
-  }
+  const sidebarExpanded = sidebarHovered;
 
   return (
     <div className="min-h-screen overflow-x-clip bg-[var(--background)] transition-colors">
@@ -74,30 +58,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className={cn("flex items-center gap-2.5", !sidebarExpanded && "justify-center")}>
               <BrandLogo iconClassName="h-8 w-8 rounded-lg" className="gap-2" showText={sidebarExpanded} />
             </div>
-            {sidebarExpanded ? (
-              <button
-                type="button"
-                onClick={toggleSidebar}
-                className="rounded-lg border border-slate-200/70 bg-white/60 p-1.5 text-slate-500 backdrop-blur transition hover:bg-white hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-                aria-label="Collapse sidebar"
-              >
-                <PanelLeftClose className="h-4 w-4" />
-              </button>
-            ) : null}
           </div>
-
-          {!sidebarExpanded ? (
-            <div className="relative mb-3 flex justify-center">
-              <button
-                type="button"
-                onClick={toggleSidebar}
-                className="rounded-lg border border-slate-200/70 bg-white/60 p-1.5 text-slate-500 backdrop-blur transition hover:bg-white hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-                aria-label="Expand sidebar"
-              >
-                <PanelLeftOpen className="h-4 w-4" />
-              </button>
-            </div>
-          ) : null}
 
           <nav className="relative space-y-1.5">
             {nav.map((item) => {
@@ -108,7 +69,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <motion.div key={item.href} whileHover={prefersReducedMotion ? undefined : { x: 2 }} whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}>
                   <Link
                     href={item.href}
-                    title={collapsed ? item.label : undefined}
+                    title={!sidebarExpanded ? item.label : undefined}
                     className={cn(
                       "group relative flex items-center rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-white/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-slate-100",
                       sidebarExpanded ? "gap-2" : "justify-center",
@@ -197,8 +158,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               {children}
             </motion.div>
           </AnimatePresence>
-          <footer className="mt-6 border-t border-slate-200 pt-4 text-center text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
-            Made by 💖 by Nad powered by The Alpha Lab 2026
+          <footer className="mt-6 border-t border-slate-200 pt-4 dark:border-slate-800">
+            <p className="rounded-xl bg-slate-50 px-3 py-2 text-center text-xs font-medium text-slate-500 dark:bg-slate-800/40 dark:text-slate-400">
+              Crafted with 💖 by Nad • Powered by The Alpha Lab • 2026
+            </p>
           </footer>
         </main>
       </div>
