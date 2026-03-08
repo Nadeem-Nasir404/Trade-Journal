@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, RefreshCw } from "lucide-react";
+import { addDays, format, parseISO } from "date-fns";
 
 import AddTradeModal, { type TradeFormTrade } from "@/components/AddTradeModal";
 import TradeListView from "@/components/TradeListView";
@@ -90,6 +91,11 @@ export function TradesClient() {
     await loadTrades();
   }
 
+  function shiftSelectedDate(days: number) {
+    const base = /^\d{4}-\d{2}-\d{2}$/.test(selectedDate) ? parseISO(selectedDate) : new Date(selectedDate);
+    setSelectedDate(format(addDays(base, days), "yyyy-MM-dd"));
+  }
+
   async function runBybitSync() {
     setSyncLoading(true);
     setSyncError("");
@@ -129,6 +135,9 @@ export function TradesClient() {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <label htmlFor="trade-day" className="text-sm font-medium text-slate-600 dark:text-slate-300">Selected Day</label>
           <div className="flex flex-wrap items-center gap-2">
+            <Button type="button" variant="outline" className="h-10" onClick={() => shiftSelectedDate(-1)}>
+              Previous
+            </Button>
             <input
               id="trade-day"
               type="date"
@@ -136,6 +145,9 @@ export function TradesClient() {
               onChange={(e) => setSelectedDate(e.target.value)}
               className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900"
             />
+            <Button type="button" variant="outline" className="h-10" onClick={() => shiftSelectedDate(1)}>
+              Next
+            </Button>
             <Button
               type="button"
               onClick={() => void runBybitSync()}
