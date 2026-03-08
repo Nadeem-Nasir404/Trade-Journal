@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { BarChart3, Bot, BookOpenText, BriefcaseBusiness, LayoutDashboard, Menu, NotebookPen, PanelLeftClose, PanelLeftOpen, ScrollText, X } from "lucide-react";
+import { BarChart3, Bot, BriefcaseBusiness, LayoutDashboard, Menu, NotebookPen, PanelLeftClose, PanelLeftOpen, ScrollText, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { AccountMenu } from "@/components/account-menu";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
+import { BrandLogo } from "@/components/brand-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 
@@ -47,12 +48,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen overflow-x-clip bg-[var(--background)] transition-colors">
       <div className={cn("mx-auto grid min-h-screen max-w-[1500px] min-w-0 grid-cols-1 gap-3 p-3 sm:gap-4 sm:p-4", sidebarExpanded ? "lg:grid-cols-[248px_1fr]" : "lg:grid-cols-[78px_1fr]")}>
         <div className="sticky top-0 z-40 flex items-center justify-between rounded-xl border border-slate-200 bg-white/90 px-3 py-2 backdrop-blur lg:hidden dark:border-slate-800 dark:bg-slate-950/85">
-          <div className="flex items-center gap-2">
-            <div className="rounded-md bg-slate-900/5 p-1.5 dark:bg-white/5">
-              <BookOpenText className="h-4 w-4 text-slate-800 dark:text-slate-100" />
-            </div>
-            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Alpha Journal</p>
-          </div>
+          <BrandLogo />
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
@@ -76,10 +72,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className={cn("relative mb-6 flex items-center px-2", sidebarExpanded ? "justify-between" : "justify-center")}>
             <div className={cn("flex items-center gap-2.5", !sidebarExpanded && "justify-center")}>
-              <div className="rounded-lg bg-slate-900/5 p-1.5 dark:bg-white/5">
-                <BookOpenText className="h-4.5 w-4.5 text-slate-800 dark:text-slate-100" />
-              </div>
-              {sidebarExpanded ? <p className="text-[15px] font-semibold tracking-tight text-slate-900 dark:text-slate-100">Alpha Journal</p> : null}
+              <BrandLogo iconClassName="h-8 w-8 rounded-lg" className="gap-2" showText={sidebarExpanded} />
             </div>
             {sidebarExpanded ? (
               <button
@@ -151,12 +144,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               className="absolute left-0 top-0 h-full w-[86vw] max-w-[320px] overflow-y-auto border-r border-slate-200 bg-gradient-to-b from-white via-slate-50 to-slate-100 p-3 dark:border-slate-700 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950"
             >
               <div className="mb-5 flex items-center justify-between px-1">
-                <div className="flex items-center gap-2.5">
-                  <div className="rounded-lg bg-slate-900/5 p-1.5 dark:bg-white/5">
-                    <BookOpenText className="h-4.5 w-4.5 text-slate-800 dark:text-slate-100" />
-                  </div>
-                  <p className="text-[15px] font-semibold tracking-tight text-slate-900 dark:text-slate-100">Alpha Journal</p>
-                </div>
+                <BrandLogo />
                 <button
                   type="button"
                   onClick={() => setMobileOpen(false)}
@@ -209,6 +197,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               {children}
             </motion.div>
           </AnimatePresence>
+          <footer className="mt-6 border-t border-slate-200 pt-4 text-center text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
+            Made by 💖 by Nad powered by The Alpha Lab 2026
+          </footer>
         </main>
       </div>
     </div>

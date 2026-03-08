@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Space_Grotesk } from "next/font/google";
+import { BrandLogo } from "@/components/brand-logo";
 
 type FormErrors = {
   email?: string;
@@ -128,12 +129,10 @@ export function LoginScreen() {
         >
         <div className="w-full max-w-[420px] rounded-2xl border border-slate-700/50 bg-slate-900/70 p-4 shadow-2xl backdrop-blur-2xl sm:max-w-[450px] sm:rounded-3xl sm:p-5 md:p-6">
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, duration: 0.6 }} className="mb-6 text-center">
-            <div className="mb-3 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/30 sm:h-18 sm:w-18">
-              <svg className="h-8 w-8 text-slate-900" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" />
-              </svg>
+            <div className="mb-3 flex justify-center">
+              <BrandLogo iconClassName="h-16 w-16 rounded-2xl sm:h-18 sm:w-18" className="gap-0" showText={false} />
             </div>
-            <h1 className="mb-2 text-xl font-bold text-white sm:text-2xl">TradeJournal</h1>
+            <h1 className="mb-2 text-xl font-bold text-white sm:text-2xl">Alpha Journal</h1>
             <p className="mb-3 text-sm text-slate-400">Track performance and sharpen your edge</p>
 
             <motion.div
@@ -248,6 +247,7 @@ export function LoginScreen() {
               <span className="text-xs text-slate-400">Analytics</span>
             </div>
           </motion.div>
+          <p className="mt-5 text-center text-xs text-slate-500">Made by 💖 by Nad powered by The Alpha Lab 2026</p>
         </div>
       </motion.div>
       </div>
