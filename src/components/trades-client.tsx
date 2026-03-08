@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, ChevronDown, RefreshCw } from "lucide-react";
+import { CheckCircle2, RefreshCw } from "lucide-react";
 import { addDays, format, parseISO } from "date-fns";
 
 import AddTradeModal, { type TradeFormTrade } from "@/components/AddTradeModal";
+import { ExchangeSyncModal } from "@/components/ExchangeSyncModal";
 import TradeListView from "@/components/TradeListView";
 import { Button } from "@/components/ui/button";
 import { useSelectedAccount } from "@/hooks/use-selected-account";
@@ -132,9 +133,22 @@ export function TradesClient() {
   return (
     <div className="min-w-0 space-y-5">
       {loadError ? <p className="rounded-md border border-rose-400/40 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">{loadError}</p> : null}
-      <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-900/60">
+      <div className="relative rounded-xl border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-900/60">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <label htmlFor="trade-day" className="text-sm font-medium text-slate-600 dark:text-slate-300">Selected Day</label>
+          <div className="flex items-center gap-2">
+            <label htmlFor="trade-day" className="text-sm font-medium text-slate-600 dark:text-slate-300">Selected Day</label>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setSyncOpen((v) => !v)}
+              title="Bybit sync"
+              aria-label="Bybit sync"
+            >
+              <RefreshCw className={`h-4 w-4 ${syncLoading ? "animate-spin" : ""}`} />
+            </Button>
+          </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button type="button" variant="outline" className="h-10" onClick={() => shiftSelectedDate(-1)}>
               Previous
@@ -149,34 +163,8 @@ export function TradesClient() {
             <Button type="button" variant="outline" className="h-10" onClick={() => shiftSelectedDate(1)}>
               Next
             </Button>
-            <Button type="button" variant="outline" className="h-10" onClick={() => setSyncOpen((v) => !v)}>
-              Bybit Sync
-              <ChevronDown className={`h-4 w-4 transition-transform ${syncOpen ? "rotate-180" : ""}`} />
-            </Button>
           </div>
         </div>
-        {syncOpen ? (
-          <div className="mt-3 rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900/70">
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                onClick={() => void runBybitSync()}
-                disabled={syncLoading}
-                className="h-10 bg-emerald-500 text-white hover:bg-emerald-600"
-              >
-                <RefreshCw className={`h-4 w-4 ${syncLoading ? "animate-spin" : ""}`} />
-                {syncLoading ? "Syncing..." : "Sync Bybit"}
-              </Button>
-              <label className="inline-flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                <input type="checkbox" checked={forceSync} onChange={(e) => setForceSync(e.target.checked)} className="h-4 w-4 rounded border-slate-400" />
-                Force re-import/update existing Bybit trades
-              </label>
-            </div>
-            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-              {lastSyncAt ? `Last sync: ${new Date(lastSyncAt).toLocaleString()}` : "Last sync: never"}
-            </p>
-          </div>
-        ) : null}
         {syncResult ? (
           <div className="mt-3 rounded-lg border border-emerald-400/30 bg-emerald-500/10 p-3 text-sm text-emerald-700 dark:text-emerald-300">
             <p className="inline-flex items-center gap-2 font-semibold"><CheckCircle2 className="h-4 w-4" />Bybit sync completed</p>
@@ -225,6 +213,16 @@ export function TradesClient() {
           await loadTrades();
           setEditing(null);
         }}
+      />
+      <ExchangeSyncModal
+        open={syncOpen}
+        onClose={() => setSyncOpen(false)}
+        onSyncBybit={() => void runBybitSync()}
+        syncLoading={syncLoading}
+        forceSync={forceSync}
+        setForceSync={setForceSync}
+        lastSyncAt={lastSyncAt}
+        selectedAccountId={selectedAccountId}
       />
     </div>
   );
