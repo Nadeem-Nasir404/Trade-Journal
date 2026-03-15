@@ -1,0 +1,2 @@
+ALTER TABLE "Trade"
+ADD COLUMN "analysis" JSONB;

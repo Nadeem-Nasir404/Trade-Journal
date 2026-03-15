@@ -82,6 +82,7 @@ export async function PATCH(request: NextRequest, context: Context) {
         status: parsed.status,
         setup: parsed.setup || null,
         strategy: parsed.strategy || null,
+        analysis: parsed.analysis ?? null,
         emotions: parsed.emotions || null,
         notes: parsed.notes || null,
         screenshots: parsed.screenshots ?? [],

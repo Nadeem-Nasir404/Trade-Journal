@@ -91,6 +91,7 @@ model Trade {
   status         TradeStatus    @default(RUNNING)
   setup          String?
   strategy       String?
+  analysis       Json?
   emotions       String?
   notes          String?
   screenshots    String[]      @default([])

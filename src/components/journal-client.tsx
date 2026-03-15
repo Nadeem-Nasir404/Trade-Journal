@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Plus, Search, Sparkles, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Search, Sparkles, X } from "lucide-react";
 
 import { JournalEmptyState } from "@/components/BeautifulEmptyStates";
 import { JournalEntryModal, type JournalFormValues } from "@/components/JournalEntryModal";
@@ -41,6 +41,7 @@ type Entry = {
 };
 
 type SortOption = "NEWEST" | "OLDEST" | "HIGHEST_SCORE" | "LOWEST_SCORE" | "TITLE";
+type DateMode = "ALL" | "DAY" | "MONTH";
 
 const blankForm: JournalFormValues = {
   entryDate: new Date().toISOString().slice(0, 10),
@@ -70,8 +71,9 @@ export function JournalClient() {
   const [form, setForm] = useState(blankForm);
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+  const [dateMode, setDateMode] = useState<DateMode>("ALL");
+  const [selectedDay, setSelectedDay] = useState(new Date().toISOString().slice(0, 10));
+  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [entryTypeFilter, setEntryTypeFilter] = useState<"ALL" | "TRADE" | "DAILY" | "WEEKLY">("ALL");
   const [sortBy, setSortBy] = useState<SortOption>("NEWEST");
 
@@ -80,11 +82,30 @@ export function JournalClient() {
     return () => clearTimeout(id);
   }, [query]);
 
+  const activeDateRange = useMemo(() => {
+    if (dateMode === "DAY") {
+      return { from: selectedDay, to: selectedDay };
+    }
+
+    if (dateMode === "MONTH") {
+      const [year, month] = selectedMonth.split("-").map(Number);
+      if (!year || !month) return { from: "", to: "" };
+      const first = new Date(year, month - 1, 1);
+      const last = new Date(year, month, 0);
+      return {
+        from: first.toISOString().slice(0, 10),
+        to: last.toISOString().slice(0, 10),
+      };
+    }
+
+    return { from: "", to: "" };
+  }, [dateMode, selectedDay, selectedMonth]);
+
   async function loadEntries() {
     const params = new URLSearchParams();
     if (debouncedQuery.trim()) params.set("q", debouncedQuery.trim());
-    if (fromDate) params.set("from", fromDate);
-    if (toDate) params.set("to", toDate);
+    if (activeDateRange.from) params.set("from", activeDateRange.from);
+    if (activeDateRange.to) params.set("to", activeDateRange.to);
     const res = await fetch(`/api/journal?${params.toString()}`);
     const json = await res.json();
     setEntries(json.entries ?? []);
@@ -93,7 +114,7 @@ export function JournalClient() {
   useEffect(() => {
     void loadEntries();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedQuery, fromDate, toDate]);
+  }, [debouncedQuery, activeDateRange.from, activeDateRange.to]);
 
   useEffect(() => {
     const tradeIdParam = searchParams.get("tradeId");
@@ -150,7 +171,7 @@ export function JournalClient() {
   }, [entries, entryTypeFilter, sortBy]);
 
   const hasActiveSearch = query.trim().length > 0;
-  const hasActiveDateFilter = Boolean(fromDate || toDate);
+  const hasActiveDateFilter = dateMode !== "ALL";
 
   async function saveEntry() {
     const linkedTradeIds = form.linkedTradeIds
@@ -245,10 +266,26 @@ export function JournalClient() {
 
   function clearFilters() {
     setQuery("");
-    setFromDate("");
-    setToDate("");
+    setDateMode("ALL");
+    setSelectedDay(new Date().toISOString().slice(0, 10));
+    setSelectedMonth(new Date().toISOString().slice(0, 7));
     setEntryTypeFilter("ALL");
     setSortBy("NEWEST");
+  }
+
+  function shiftDate(direction: "PREV" | "NEXT") {
+    if (dateMode === "DAY") {
+      const date = new Date(selectedDay);
+      date.setDate(date.getDate() + (direction === "NEXT" ? 1 : -1));
+      setSelectedDay(date.toISOString().slice(0, 10));
+      return;
+    }
+
+    if (dateMode === "MONTH") {
+      const [year, month] = selectedMonth.split("-").map(Number);
+      const date = new Date(year, month - 1 + (direction === "NEXT" ? 1 : -1), 1);
+      setSelectedMonth(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`);
+    }
   }
 
   return (
@@ -317,15 +354,33 @@ export function JournalClient() {
             </div>
           </div>
 
-          <div className="grid gap-3 lg:grid-cols-[1fr_1fr_220px_auto]">
+          <div className="flex flex-wrap items-end gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">From</label>
-              <Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+              <label className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Range</label>
+              <div className="flex flex-wrap gap-2">
+                {(["ALL", "DAY", "MONTH"] as const).map((mode) => (
+                  <Button key={mode} type="button" size="sm" variant={dateMode === mode ? "default" : "outline"} className={dateMode === mode ? "bg-emerald-500 hover:bg-emerald-600" : ""} onClick={() => setDateMode(mode)}>
+                    {mode === "ALL" ? "All Time" : mode === "DAY" ? "Single Day" : "Month"}
+                  </Button>
+                ))}
+              </div>
             </div>
-            <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">To</label>
-              <Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
-            </div>
+
+            {dateMode !== "ALL" ? (
+              <div className="flex flex-wrap items-end gap-2">
+                <Button type="button" variant="outline" size="icon" onClick={() => shiftDate("PREV")}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{dateMode === "DAY" ? "Date" : "Month"}</label>
+                  <Input type={dateMode === "DAY" ? "date" : "month"} value={dateMode === "DAY" ? selectedDay : selectedMonth} onChange={(e) => dateMode === "DAY" ? setSelectedDay(e.target.value) : setSelectedMonth(e.target.value)} />
+                </div>
+                <Button type="button" variant="outline" size="icon" onClick={() => shiftDate("NEXT")}>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : null}
+
             <div className="space-y-1">
               <label className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Sort By</label>
               <select
@@ -358,7 +413,7 @@ export function JournalClient() {
               ) : null}
               {hasActiveDateFilter ? (
                 <span className="rounded-full bg-blue-500/10 px-2.5 py-1 text-xs font-semibold text-blue-600 dark:text-blue-300">
-                  Range: {fromDate || "Any"} to {toDate || "Any"}
+                  {dateMode === "DAY" ? `Date: ${selectedDay}` : `Month: ${selectedMonth}`}
                 </span>
               ) : null}
               <span className="rounded-full bg-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-200">

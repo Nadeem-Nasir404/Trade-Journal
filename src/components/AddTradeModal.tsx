@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,
   CheckCircle2,
+  ChevronDown,
   Hash,
   Minus,
   Target,
@@ -22,6 +23,15 @@ import { ScreenshotUpload, type TradeScreenshot } from "@/components/ScreenshotU
 
 type TradeStatus = "RUNNING" | "PROFIT" | "LOSS" | "BREAKEVEN";
 type TradeSide = "LONG" | "SHORT";
+type TradeTab = "BASIC" | "ANALYSIS" | "NOTES";
+
+export type TradeAnalysis = {
+  entryRetests: number;
+  entryTimeframe: string;
+  marketCondition: string;
+  htfConfluence: string;
+  confluences: string[];
+};
 
 export type TradeFormTrade = {
   id: number;
@@ -42,6 +52,7 @@ export type TradeFormTrade = {
   status: TradeStatus;
   setup: string | null;
   strategy: string | null;
+  analysis?: TradeAnalysis | null;
   emotions: string | null;
   notes: string | null;
   screenshots?: string[];
@@ -71,11 +82,64 @@ const resultOptions: ResultOption[] = [
 ];
 
 const emotionOptions = ["Confident", "Anxious", "Greedy", "Fearful", "Calm", "Impulsive", "Patient", "FOMO"];
+const timeframeOptions = ["1m", "5m", "15m", "30m", "1H", "4H", "1D", "1W"];
+const marketConditionOptions = ["Trending", "Range", "Breakout", "Reversal", "Volatile", "Low Liquidity"];
+const confluenceGroups = [
+  {
+    title: "Favorites",
+    accent: "amber",
+    items: ["Fibonacci", "Order Block", "Fair Value Gap", "Break of Structure", "Trend", "Liquidity Sweep"],
+  },
+  {
+    title: "Order Flow",
+    accent: "emerald",
+    items: ["Absorption", "Delta Shift", "Bid/Ask Imbalance", "Stacked Orders"],
+  },
+  {
+    title: "Technical Analysis",
+    accent: "blue",
+    items: ["VWAP", "RSI Divergence", "Moving Average", "Trendline Retest"],
+  },
+  {
+    title: "Market Structure",
+    accent: "violet",
+    items: ["Higher High", "Lower Low", "Choch", "Breaker Block"],
+  },
+  {
+    title: "Session / Time",
+    accent: "rose",
+    items: ["London Open", "NY Open", "Session Sweep", "Kill Zone"],
+  },
+];
+
+const defaultAnalysis: TradeAnalysis = {
+  entryRetests: 0,
+  entryTimeframe: "15m",
+  marketCondition: "",
+  htfConfluence: "",
+  confluences: [],
+};
 
 function toNum(v: string) {
   if (!v.trim()) return 0;
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
+}
+
+function getAccentClasses(accent: string) {
+  switch (accent) {
+    case "amber":
+      return "border-amber-300/30 bg-amber-500/5 text-amber-600 dark:text-amber-300";
+    case "blue":
+      return "border-blue-300/30 bg-blue-500/5 text-blue-600 dark:text-blue-300";
+    case "violet":
+      return "border-violet-300/30 bg-violet-500/5 text-violet-600 dark:text-violet-300";
+    case "rose":
+      return "border-rose-300/30 bg-rose-500/5 text-rose-600 dark:text-rose-300";
+    case "emerald":
+    default:
+      return "border-emerald-300/30 bg-emerald-500/5 text-emerald-600 dark:text-emerald-300";
+  }
 }
 
 export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, initialTrade }: Props) {
@@ -86,6 +150,14 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
   const [accounts, setAccounts] = useState<Array<{ id: number; name: string; icon: string | null; currentBalance: number }>>([]);
   const [screenshots, setScreenshots] = useState<TradeScreenshot[]>([]);
   const [annotating, setAnnotating] = useState<TradeScreenshot | null>(null);
+  const [activeTab, setActiveTab] = useState<TradeTab>("BASIC");
+  const [openConfluenceGroups, setOpenConfluenceGroups] = useState<Record<string, boolean>>({
+    Favorites: true,
+    "Order Flow": false,
+    "Technical Analysis": false,
+    "Market Structure": false,
+    "Session / Time": false,
+  });
   const [formData, setFormData] = useState({
     accountId: "",
     symbol: "",
@@ -98,6 +170,7 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
     result: "RUNNING" as TradeStatus,
     setup: "",
     strategy: "",
+    analysis: defaultAnalysis,
     notes: "",
     emotions: [] as string[],
   });
@@ -117,6 +190,10 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
       result: initialTrade.status,
       setup: initialTrade.setup ?? "",
       strategy: initialTrade.strategy ?? "",
+      analysis: {
+        ...defaultAnalysis,
+        ...(initialTrade.analysis ?? {}),
+      },
       notes: initialTrade.notes ?? "",
       emotions: (initialTrade.emotions ?? "").split(",").map((e) => e.trim()).filter(Boolean),
     });
@@ -138,9 +215,11 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
         result: "RUNNING",
         setup: "",
         strategy: "",
+        analysis: defaultAnalysis,
         notes: "",
         emotions: [],
       });
+      setActiveTab("BASIC");
       setSaveError("");
       setScreenshots([]);
     }, 0);
@@ -194,32 +273,60 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
     return { risk, reward, ratio: risk > 0 ? reward / risk : 0 };
   }, [formData.direction, formData.entry, formData.exit, formData.stopLoss]);
 
+  function updateAnalysis<K extends keyof TradeAnalysis>(key: K, value: TradeAnalysis[K]) {
+    setFormData((prev) => ({
+      ...prev,
+      analysis: {
+        ...prev.analysis,
+        [key]: value,
+      },
+    }));
+  }
+
+  function toggleConfluence(item: string) {
+    setFormData((prev) => ({
+      ...prev,
+      analysis: {
+        ...prev.analysis,
+        confluences: prev.analysis.confluences.includes(item)
+          ? prev.analysis.confluences.filter((value) => value !== item)
+          : [...prev.analysis.confluences, item],
+      },
+    }));
+  }
+
   async function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault();
     setSaveError("");
 
     if (!formData.symbol.trim()) {
       setSaveError("Symbol is required.");
+      setActiveTab("BASIC");
       return;
     }
     if (!formData.accountId.trim()) {
       setSaveError("Account is required.");
+      setActiveTab("BASIC");
       return;
     }
     if (!formData.entry.trim()) {
       setSaveError("Entry price is required.");
+      setActiveTab("BASIC");
       return;
     }
     if (!formData.stopLoss.trim()) {
       setSaveError("Stop loss is required.");
+      setActiveTab("BASIC");
       return;
     }
     if (!formData.quantity.trim()) {
       setSaveError("Quantity is required.");
+      setActiveTab("BASIC");
       return;
     }
     if (formData.result !== "RUNNING" && !formData.exit.trim()) {
       setSaveError("Exit price is required for closed trades.");
+      setActiveTab("BASIC");
       return;
     }
 
@@ -248,6 +355,7 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
       status: formData.result,
       setup: formData.setup,
       strategy: formData.strategy,
+      analysis: formData.analysis,
       emotions: formData.emotions.join(", "),
       notes: formData.notes,
       screenshots: [] as string[],
@@ -321,6 +429,31 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
               </div>
 
               <form onSubmit={(e) => void handleSubmit(e)} className="max-h-[calc(90vh-200px)] space-y-6 overflow-y-auto p-6">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-2 dark:border-slate-700 dark:bg-slate-800/30">
+                  <div className="grid grid-cols-3 gap-2">
+                    {([
+                      { id: "BASIC", label: "Basic" },
+                      { id: "ANALYSIS", label: "Analysis" },
+                      { id: "NOTES", label: "Notes" },
+                    ] as Array<{ id: TradeTab; label: string }>).map((tab) => (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+                          activeTab === tab.id
+                            ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25"
+                            : "text-slate-500 hover:bg-white hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {activeTab === "BASIC" ? (
+                  <>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <div className="md:col-span-2">
                     <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Trading Account</label>
@@ -328,7 +461,7 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
                       <option value="">Select account...</option>
                       {accounts.map((account) => (
                         <option key={account.id} value={account.id}>
-                          {(account.icon ?? "💼")} {account.name} - ${account.currentBalance.toLocaleString()}
+                          {(account.icon ?? "??")} {account.name} - ${account.currentBalance.toLocaleString()}
                         </option>
                       ))}
                     </select>
@@ -424,7 +557,85 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
                   </div>
                   <div><label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Strategy</label><input type="text" value={formData.strategy} onChange={(e) => setFormData((p) => ({ ...p, strategy: e.target.value }))} placeholder="Scalping, Day Trade, Swing..." className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white" /></div>
                 </div>
+                  </>
+                ) : null}
 
+                {activeTab === "ANALYSIS" ? (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-[160px_1fr_1fr]">
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Entry Retests</label>
+                        <div className="flex items-center gap-2">
+                          <button type="button" onClick={() => updateAnalysis("entryRetests", Math.max(0, formData.analysis.entryRetests - 1))} className="h-11 w-11 rounded-xl border border-slate-300 bg-white text-xl text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">-</button>
+                          <div className="flex h-11 min-w-[56px] items-center justify-center rounded-xl border border-slate-300 bg-white px-4 font-mono text-lg dark:border-slate-700 dark:bg-slate-800">{formData.analysis.entryRetests}</div>
+                          <button type="button" onClick={() => updateAnalysis("entryRetests", formData.analysis.entryRetests + 1)} className="h-11 w-11 rounded-xl border border-slate-300 bg-white text-xl text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">+</button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Entry Timeframe</label>
+                        <select value={formData.analysis.entryTimeframe} onChange={(e) => updateAnalysis("entryTimeframe", e.target.value)} className="h-11 w-full rounded-xl border-2 border-slate-300 bg-white px-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white">
+                          {timeframeOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Market Condition</label>
+                        <select value={formData.analysis.marketCondition} onChange={(e) => updateAnalysis("marketCondition", e.target.value)} className="h-11 w-full rounded-xl border-2 border-slate-300 bg-white px-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white">
+                          <option value="">Select...</option>
+                          {marketConditionOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">HTF Confluence</label>
+                      <input type="text" value={formData.analysis.htfConfluence} onChange={(e) => updateAnalysis("htfConfluence", e.target.value)} placeholder="Higher timeframe bias, major level, weekly structure..." className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white" />
+                    </div>
+
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-700 dark:bg-slate-800/30">
+                      <div className="mb-4 flex flex-wrap items-center gap-2">
+                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">Selected Confluences</span>
+                        {formData.analysis.confluences.length ? formData.analysis.confluences.map((item) => (
+                          <button key={item} type="button" onClick={() => toggleConfluence(item)} className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-600 transition hover:bg-emerald-500/25 dark:text-emerald-300">
+                            {item} x
+                          </button>
+                        )) : <span className="text-xs text-slate-500 dark:text-slate-400">No confluences selected yet</span>}
+                      </div>
+
+                      <div className="space-y-3">
+                        {confluenceGroups.map((group) => {
+                          const groupOpen = openConfluenceGroups[group.title];
+                          return (
+                            <div key={group.title} className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900/60">
+                              <button type="button" onClick={() => setOpenConfluenceGroups((prev) => ({ ...prev, [group.title]: !prev[group.title] }))} className="flex w-full items-center justify-between px-4 py-3 text-left">
+                                <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{group.title}</span>
+                                <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${groupOpen ? "rotate-180" : ""}`} />
+                              </button>
+                              {groupOpen ? (
+                                <div className="border-t border-slate-200 px-4 py-4 dark:border-slate-700">
+                                  <div className="flex flex-wrap gap-2">
+                                    {group.items.map((item) => {
+                                      const active = formData.analysis.confluences.includes(item);
+                                      return (
+                                        <button key={item} type="button" onClick={() => toggleConfluence(item)} className={`rounded-full border px-3 py-2 text-sm font-medium transition-all ${active ? getAccentClasses(group.accent) : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300 dark:hover:bg-slate-800"}`}>
+                                          {item}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              ) : null}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
+                {activeTab === "NOTES" ? (
+                  <>
                 <div>
                   <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">How did you feel during this trade?</label>
                   <div className="flex flex-wrap gap-2">
@@ -460,6 +671,8 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
                     onAnnotate={(shot) => setAnnotating(shot)}
                   />
                 </div>
+                  </>
+                ) : null}
                 {saveError ? (
                   <p className="rounded-lg border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-600 dark:text-rose-300">
                     {saveError}
@@ -469,9 +682,16 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
 
               <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-6 py-4 dark:border-slate-700 dark:bg-slate-900/50">
                 <button type="button" onClick={onClose} className="rounded-lg px-6 py-2.5 text-slate-500 transition-all hover:bg-slate-200 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white">Cancel</button>
-                <Button type="button" onClick={() => void handleSubmit()} disabled={saving} className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700">
-                  {saving ? "Saving..." : "Save Trade"}
-                </Button>
+                <div className="flex items-center gap-3">
+                  {activeTab !== "NOTES" ? (
+                    <Button type="button" variant="outline" onClick={() => setActiveTab(activeTab === "BASIC" ? "ANALYSIS" : "NOTES")}>
+                      Next
+                    </Button>
+                  ) : null}
+                  <Button type="button" onClick={() => void handleSubmit()} disabled={saving} className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700">
+                    {saving ? "Saving..." : "Save Trade"}
+                  </Button>
+                </div>
               </div>
             </motion.div>
           </div>

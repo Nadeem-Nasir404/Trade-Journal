@@ -1,6 +1,14 @@
 import { TradeSide, TradeStatus } from "@prisma/client";
 import { z } from "zod";
 
+export const tradeAnalysisSchema = z.object({
+  entryRetests: z.coerce.number().int().min(0).max(20).optional().default(0),
+  entryTimeframe: z.string().trim().max(20).optional().default(""),
+  marketCondition: z.string().trim().max(80).optional().default(""),
+  htfConfluence: z.string().trim().max(200).optional().default(""),
+  confluences: z.array(z.string().trim().min(1).max(80)).max(30).optional().default([]),
+});
+
 export const tradeSchema = z.object({
   userId: z.string().trim().optional().or(z.literal("")),
   accountId: z.coerce.number().int().positive().optional().nullable(),
@@ -17,6 +25,7 @@ export const tradeSchema = z.object({
   status: z.nativeEnum(TradeStatus).optional().default(TradeStatus.RUNNING),
   setup: z.string().trim().max(80).optional().or(z.literal("")),
   strategy: z.string().trim().max(80).optional().or(z.literal("")),
+  analysis: tradeAnalysisSchema.optional().nullable(),
   emotions: z.string().trim().max(240).optional().or(z.literal("")),
   notes: z.string().trim().max(4000).optional().or(z.literal("")),
   screenshots: z.array(z.string().trim().min(1)).optional().default([]),
