@@ -15,6 +15,10 @@ function normalizeNullableNumber(value: unknown) {
   return value;
 }
 
+function normalizeAnalysis(value: unknown) {
+  return value ? (value as Prisma.InputJsonValue) : Prisma.JsonNull;
+}
+
 function parseFilters(searchParams: URLSearchParams) {
   const symbols = searchParams.get("symbols")?.split(",").filter(Boolean) ?? [];
   const accountId = searchParams.get("accountId") ?? undefined;
@@ -133,7 +137,7 @@ export async function POST(request: NextRequest) {
         status: parsed.status,
         setup: parsed.setup || null,
         strategy: parsed.strategy || null,
-        analysis: parsed.analysis ?? null,
+        analysis: normalizeAnalysis(parsed.analysis),
         emotions: parsed.emotions || null,
         notes: parsed.notes || null,
         screenshots: parsed.screenshots ?? [],

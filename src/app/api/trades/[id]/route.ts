@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth";
@@ -11,6 +12,10 @@ function normalizeNullableNumber(value: unknown) {
     return null;
   }
   return value;
+}
+
+function normalizeAnalysis(value: unknown) {
+  return value ? (value as Prisma.InputJsonValue) : Prisma.JsonNull;
 }
 
 type Context = {
@@ -82,7 +87,7 @@ export async function PATCH(request: NextRequest, context: Context) {
         status: parsed.status,
         setup: parsed.setup || null,
         strategy: parsed.strategy || null,
-        analysis: parsed.analysis ?? null,
+        analysis: normalizeAnalysis(parsed.analysis),
         emotions: parsed.emotions || null,
         notes: parsed.notes || null,
         screenshots: parsed.screenshots ?? [],
