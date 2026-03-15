@@ -29,8 +29,13 @@ export type TradeAnalysis = {
   entryRetests: number;
   entryTimeframe: string;
   marketCondition: string;
+  htfTimeframe: string;
   htfConfluence: string;
   confluences: string[];
+  entryQuality: number;
+  slReason: string;
+  tpReason: string;
+  partialTakeProfits: Array<{ price: number; percent: number }>;
 };
 
 export type TradeFormTrade = {
@@ -121,8 +126,13 @@ const defaultAnalysis: TradeAnalysis = {
   entryRetests: 0,
   entryTimeframe: "15m",
   marketCondition: "",
+  htfTimeframe: "4H",
   htfConfluence: "",
   confluences: [],
+  entryQuality: 3,
+  slReason: "",
+  tpReason: "",
+  partialTakeProfits: [{ price: 0, percent: 0 }, { price: 0, percent: 0 }],
 };
 
 function toNum(v: string) {
@@ -624,6 +634,38 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
                       </div>
                     </div>
 
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Higher Timeframe</label>
+                        <select
+                          value={formData.analysis.htfTimeframe}
+                          onChange={(e) => updateAnalysis("htfTimeframe", e.target.value)}
+                          className="h-11 w-full rounded-xl border-2 border-slate-300 bg-white px-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white"
+                        >
+                          {timeframeOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Entry Quality</label>
+                        <div className="flex gap-2">
+                          {[1, 2, 3, 4, 5].map((score) => (
+                            <button
+                              key={score}
+                              type="button"
+                              onClick={() => updateAnalysis("entryQuality", score)}
+                              className={`h-11 w-11 rounded-xl border text-sm font-semibold transition ${
+                                formData.analysis.entryQuality === score
+                                  ? "border-emerald-500 bg-emerald-500/10 text-emerald-600"
+                                  : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300"
+                              }`}
+                            >
+                              {score}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
                     <div>
                       <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Trade Grade</label>
                       <select
@@ -641,6 +683,66 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
                     <div>
                       <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">HTF Confluence</label>
                       <input type="text" value={formData.analysis.htfConfluence} onChange={(e) => updateAnalysis("htfConfluence", e.target.value)} placeholder="Higher timeframe bias, major level, weekly structure..." className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white" />
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Stop Loss Reasoning</label>
+                        <input
+                          type="text"
+                          value={formData.analysis.slReason}
+                          onChange={(e) => updateAnalysis("slReason", e.target.value)}
+                          placeholder="Structure break, volatility buffer..."
+                          className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Take Profit Reasoning</label>
+                        <input
+                          type="text"
+                          value={formData.analysis.tpReason}
+                          onChange={(e) => updateAnalysis("tpReason", e.target.value)}
+                          placeholder="Liquidity target, next zone..."
+                          className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-700 dark:bg-slate-800/30">
+                      <div className="mb-3 flex items-center justify-between">
+                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">Partial Take Profits</span>
+                        <span className="text-xs text-slate-500">Add up to 2 targets</span>
+                      </div>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        {formData.analysis.partialTakeProfits.slice(0, 2).map((tp, idx) => (
+                          <div key={`tp-${idx}`} className="grid grid-cols-2 gap-2">
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={tp.price || ""}
+                              onChange={(e) => {
+                                const price = Number(e.target.value || 0);
+                                updateAnalysis("partialTakeProfits", formData.analysis.partialTakeProfits.map((p, i) => (i === idx ? { ...p, price } : p)));
+                              }}
+                              placeholder={`TP${idx + 1} Price`}
+                              className="h-11 w-full rounded-xl border-2 border-slate-300 bg-white px-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white"
+                            />
+                            <input
+                              type="number"
+                              step="1"
+                              min={0}
+                              max={100}
+                              value={tp.percent || ""}
+                              onChange={(e) => {
+                                const percent = Number(e.target.value || 0);
+                                updateAnalysis("partialTakeProfits", formData.analysis.partialTakeProfits.map((p, i) => (i === idx ? { ...p, percent } : p)));
+                              }}
+                              placeholder="% Size"
+                              className="h-11 w-full rounded-xl border-2 border-slate-300 bg-white px-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white"
+                            />
+                          </div>
+                        ))}
+                      </div>
                     </div>
 
                     <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-700 dark:bg-slate-800/30">

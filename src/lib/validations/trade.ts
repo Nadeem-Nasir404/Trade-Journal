@@ -5,8 +5,22 @@ export const tradeAnalysisSchema = z.object({
   entryRetests: z.coerce.number().int().min(0).max(20).optional().default(0),
   entryTimeframe: z.string().trim().max(20).optional().default(""),
   marketCondition: z.string().trim().max(80).optional().default(""),
+  htfTimeframe: z.string().trim().max(20).optional().default(""),
   htfConfluence: z.string().trim().max(200).optional().default(""),
   confluences: z.array(z.string().trim().min(1).max(80)).max(30).optional().default([]),
+  entryQuality: z.coerce.number().int().min(1).max(5).optional().default(3),
+  slReason: z.string().trim().max(200).optional().default(""),
+  tpReason: z.string().trim().max(200).optional().default(""),
+  partialTakeProfits: z
+    .array(
+      z.object({
+        price: z.coerce.number().nonnegative().optional().default(0),
+        percent: z.coerce.number().min(0).max(100).optional().default(0),
+      }),
+    )
+    .max(3)
+    .optional()
+    .default([]),
 });
 
 export const tradeSchema = z.object({
