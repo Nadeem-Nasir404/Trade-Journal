@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { BarChart3, Bot, BriefcaseBusiness, ChevronRight, LayoutDashboard, Menu, NotebookPen, ScrollText, Sparkles, X } from "lucide-react";
+import { BarChart3, Bot, BriefcaseBusiness, ChevronRight, LayoutDashboard, Menu, NotebookPen, ScrollText, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { AccountMenu } from "@/components/account-menu";
@@ -70,25 +70,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </motion.div>
               ) : null}
             </div>
-            {sidebarExpanded ? (
-              <motion.div
-                initial={prefersReducedMotion ? false : { opacity: 0, y: 6 }}
-                animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-                className="mt-3 rounded-2xl bg-slate-950 px-3 py-3 text-white dark:bg-white/[0.04]"
-              >
-                <div className="flex items-start gap-2.5">
-                  <div className="mt-0.5 rounded-xl bg-emerald-500/15 p-2 text-emerald-400">
-                    <Sparkles className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold">Stay sharp today</p>
-                    <p className="mt-1 text-xs leading-5 text-slate-300 dark:text-slate-400">
-                      Review trades, capture lessons, and keep your edge documented.
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            ) : null}
           </div>
 
           <nav className="relative space-y-2">
