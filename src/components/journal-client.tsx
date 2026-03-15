@@ -368,14 +368,14 @@ export function JournalClient() {
 
             {dateMode !== "ALL" ? (
               <div className="flex flex-wrap items-end gap-2">
-                <Button type="button" variant="outline" size="icon" onClick={() => shiftDate("PREV")}>
+                <Button type="button" variant="outline" size="sm" className="h-10 w-10 p-0" onClick={() => shiftDate("PREV")}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <div className="space-y-1">
                   <label className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{dateMode === "DAY" ? "Date" : "Month"}</label>
                   <Input type={dateMode === "DAY" ? "date" : "month"} value={dateMode === "DAY" ? selectedDay : selectedMonth} onChange={(e) => dateMode === "DAY" ? setSelectedDay(e.target.value) : setSelectedMonth(e.target.value)} />
                 </div>
-                <Button type="button" variant="outline" size="icon" onClick={() => shiftDate("NEXT")}>
+                <Button type="button" variant="outline" size="sm" className="h-10 w-10 p-0" onClick={() => shiftDate("NEXT")}>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
