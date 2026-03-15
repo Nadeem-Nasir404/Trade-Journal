@@ -26,8 +26,6 @@ type DayData = {
 
 export function CalendarCell({
   day,
-  maxPnl,
-  minPnl,
   isActive,
   isToday,
   isBest,
@@ -36,8 +34,6 @@ export function CalendarCell({
   onSelect,
 }: {
   day: DayData;
-  maxPnl: number;
-  minPnl: number;
   isActive?: boolean;
   isToday?: boolean;
   isBest?: boolean;
@@ -75,7 +71,7 @@ export function CalendarCell({
     };
   }, [day]);
 
-  const cellColor = useMemo(() => getCellColor(day.pnl, maxPnl, minPnl), [day.pnl, maxPnl, minPnl]);
+  const cellColor = useMemo(() => getCellColor(day.pnl), [day.pnl]);
 
   function openTooltip() {
     if (hoverTimer.current) clearTimeout(hoverTimer.current);

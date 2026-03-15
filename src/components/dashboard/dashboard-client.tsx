@@ -112,8 +112,6 @@ export function DashboardClient() {
   const firstWeekday = getDay(calendarMonth);
   const daysInMonth = endOfMonth(calendarMonth).getDate();
   const monthDaysLimited = monthDays.slice(0, daysInMonth);
-  const maxPnl = useMemo(() => Math.max(0, ...monthDaysLimited.map((d) => d.pnl)), [monthDaysLimited]);
-  const minPnl = useMemo(() => Math.min(0, ...monthDaysLimited.map((d) => d.pnl)), [monthDaysLimited]);
   const bestDay = useMemo(() => [...monthDaysLimited].sort((a, b) => b.pnl - a.pnl)[0]?.date, [monthDaysLimited]);
   const worstDay = useMemo(() => [...monthDaysLimited].sort((a, b) => a.pnl - b.pnl)[0]?.date, [monthDaysLimited]);
   const streakMap = useMemo(() => {
@@ -294,8 +292,6 @@ export function DashboardClient() {
                           <CalendarCell
                             key={day.date}
                             day={day}
-                            maxPnl={maxPnl}
-                            minPnl={minPnl}
                             isActive={selectedDay?.date === day.date}
                             isToday={format(new Date(), "yyyy-MM-dd") === day.date}
                             isBest={bestDay === day.date && day.tradeCount > 0}
