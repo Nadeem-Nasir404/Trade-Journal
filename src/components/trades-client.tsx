@@ -32,6 +32,7 @@ export function TradesClient() {
   const [trades, setTrades] = useState<TradeFormTrade[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<TradeFormTrade | null>(null);
+  const [modalMode, setModalMode] = useState<"full" | "quick">("full");
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
   const [loadError, setLoadError] = useState("");
   const [syncLoading, setSyncLoading] = useState(false);
@@ -168,10 +169,17 @@ export function TradesClient() {
         date={selectedDate}
         trades={dayTrades}
         onAddTrade={() => {
+          setModalMode("full");
+          setEditing(null);
+          setOpen(true);
+        }}
+        onQuickAddTrade={() => {
+          setModalMode("quick");
           setEditing(null);
           setOpen(true);
         }}
         onEditTrade={(trade) => {
+          setModalMode("full");
           setEditing(trade);
           setOpen(true);
         }}
@@ -197,6 +205,7 @@ export function TradesClient() {
         onClose={() => setOpen(false)}
         selectedDate={selectedDate}
         initialTrade={editing}
+        mode={modalMode}
         onSaved={async () => {
           await loadTrades();
           setEditing(null);

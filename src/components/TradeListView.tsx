@@ -53,6 +53,7 @@ export default function TradeListView({
   date,
   trades,
   onAddTrade,
+  onQuickAddTrade,
   onEditTrade,
   onDeleteTrade,
   onAddJournal,
@@ -61,6 +62,7 @@ export default function TradeListView({
   date: string;
   trades: TradeFormTrade[];
   onAddTrade: () => void;
+  onQuickAddTrade?: () => void;
   onEditTrade: (trade: TradeFormTrade) => void;
   onDeleteTrade: (id: number) => void;
   onAddJournal?: (trade: TradeFormTrade) => void;
@@ -110,12 +112,22 @@ export default function TradeListView({
             </div>
           </div>
 
-          <button
-            onClick={onAddTrade}
-            className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-3 font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all hover:from-emerald-600 hover:to-teal-700 sm:w-auto"
-          >
-            + Add Trade
-          </button>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            {onQuickAddTrade ? (
+              <button
+                onClick={onQuickAddTrade}
+                className="w-full rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-500 transition-all hover:bg-emerald-500/20 sm:w-auto"
+              >
+                Quick Entry
+              </button>
+            ) : null}
+            <button
+              onClick={onAddTrade}
+              className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-3 font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all hover:from-emerald-600 hover:to-teal-700 sm:w-auto"
+            >
+              + Add Trade
+            </button>
+          </div>
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-6">

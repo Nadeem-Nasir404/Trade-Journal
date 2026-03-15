@@ -66,6 +66,7 @@ type Props = {
   selectedDate: string;
   onSaved: () => Promise<void> | void;
   initialTrade?: TradeFormTrade | null;
+  mode?: "full" | "quick";
 };
 
 type ResultOption = {
@@ -143,8 +144,9 @@ function getAccentClasses(accent: string) {
   }
 }
 
-export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, initialTrade }: Props) {
+export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, initialTrade, mode = "full" }: Props) {
   const { selectedAccountId, setSelectedAccountId } = useSelectedAccount();
+  const isQuick = mode === "quick";
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [symbolSuggestions, setSymbolSuggestions] = useState<string[]>([]);
@@ -434,28 +436,30 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
               </div>
 
               <form onSubmit={(e) => void handleSubmit(e)} className="max-h-[calc(90vh-200px)] space-y-6 overflow-y-auto p-6">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-2 dark:border-slate-700 dark:bg-slate-800/30">
-                  <div className="grid grid-cols-3 gap-2">
-                    {([
-                      { id: "BASIC", label: "Basic" },
-                      { id: "ANALYSIS", label: "Analysis" },
-                      { id: "NOTES", label: "Notes" },
-                    ] as Array<{ id: TradeTab; label: string }>).map((tab) => (
-                      <button
-                        key={tab.id}
-                        type="button"
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
-                          activeTab === tab.id
-                            ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25"
-                            : "text-slate-500 hover:bg-white hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-                        }`}
-                      >
-                        {tab.label}
-                      </button>
-                    ))}
+                {!isQuick ? (
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-2 dark:border-slate-700 dark:bg-slate-800/30">
+                    <div className="grid grid-cols-3 gap-2">
+                      {([
+                        { id: "BASIC", label: "Basic" },
+                        { id: "ANALYSIS", label: "Analysis" },
+                        { id: "NOTES", label: "Notes" },
+                      ] as Array<{ id: TradeTab; label: string }>).map((tab) => (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          onClick={() => setActiveTab(tab.id)}
+                          className={`rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+                            activeTab === tab.id
+                              ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25"
+                              : "text-slate-500 hover:bg-white hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                ) : null}
 
                 {activeTab === "BASIC" ? (
                   <>
@@ -545,27 +549,29 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Setup / Pattern</label>
-                    <select value={formData.setup} onChange={(e) => setFormData((p) => ({ ...p, setup: e.target.value }))} className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white">
-                      <option value="">Select setup...</option>
-                      <option value="Breakout">Breakout</option>
-                      <option value="Pullback">Pullback</option>
-                      <option value="Reversal">Reversal</option>
-                      <option value="Trend Following">Trend Following</option>
-                      <option value="Range Trading">Range Trading</option>
-                      <option value="Support/Resistance">Support/Resistance</option>
-                      <option value="Chart Pattern">Chart Pattern</option>
-                      <option value="Other">Other</option>
-                    </select>
+                {!isQuick ? (
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Setup / Pattern</label>
+                      <select value={formData.setup} onChange={(e) => setFormData((p) => ({ ...p, setup: e.target.value }))} className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white">
+                        <option value="">Select setup...</option>
+                        <option value="Breakout">Breakout</option>
+                        <option value="Pullback">Pullback</option>
+                        <option value="Reversal">Reversal</option>
+                        <option value="Trend Following">Trend Following</option>
+                        <option value="Range Trading">Range Trading</option>
+                        <option value="Support/Resistance">Support/Resistance</option>
+                        <option value="Chart Pattern">Chart Pattern</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div><label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Strategy</label><input type="text" value={formData.strategy} onChange={(e) => setFormData((p) => ({ ...p, strategy: e.target.value }))} placeholder="Scalping, Day Trade, Swing..." className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white" /></div>
                   </div>
-                  <div><label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Strategy</label><input type="text" value={formData.strategy} onChange={(e) => setFormData((p) => ({ ...p, strategy: e.target.value }))} placeholder="Scalping, Day Trade, Swing..." className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white" /></div>
-                </div>
+                ) : null}
                   </>
                 ) : null}
 
-                {activeTab === "ANALYSIS" ? (
+                {!isQuick && activeTab === "ANALYSIS" ? (
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-[160px_1fr_1fr]">
                       <div>
@@ -653,7 +659,7 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
                   </div>
                 ) : null}
 
-                {activeTab === "NOTES" ? (
+                {!isQuick && activeTab === "NOTES" ? (
                   <>
                 <div>
                   <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">How did you feel during this trade?</label>
@@ -702,7 +708,7 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
               <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-6 py-4 dark:border-slate-700 dark:bg-slate-900/50">
                 <button type="button" onClick={onClose} className="rounded-lg px-6 py-2.5 text-slate-500 transition-all hover:bg-slate-200 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white">Cancel</button>
                 <div className="flex items-center gap-3">
-                  {activeTab !== "NOTES" ? (
+                  {!isQuick && activeTab !== "NOTES" ? (
                     <Button type="button" variant="outline" onClick={() => setActiveTab(activeTab === "BASIC" ? "ANALYSIS" : "NOTES")}>
                       Next
                     </Button>
