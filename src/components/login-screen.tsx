@@ -8,8 +8,10 @@ import { Space_Grotesk } from "next/font/google";
 import { BrandLogo } from "@/components/brand-logo";
 
 type FormErrors = {
+  name?: string;
   email?: string;
   password?: string;
+  confirmPassword?: string;
   root?: string;
 };
 
@@ -18,10 +20,13 @@ const displayFont = Space_Grotesk({
   weight: ["400", "500", "700"],
 });
 
-export function LoginScreen() {
+export function LoginScreen({ mode = "login" }: { mode?: "login" | "signup" }) {
   const router = useRouter();
+  const isSignup = mode === "signup";
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -29,6 +34,9 @@ export function LoginScreen() {
 
   function validateForm() {
     const next: FormErrors = {};
+    if (isSignup && !name.trim()) {
+      next.name = "Name is required";
+    }
     if (!email.trim()) {
       next.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(email)) {
@@ -37,8 +45,16 @@ export function LoginScreen() {
 
     if (!password.trim()) {
       next.password = "Password is required";
-    } else if (password.length < 6) {
-      next.password = "Password must be at least 6 characters";
+    } else if (password.length < 8) {
+      next.password = "Password must be at least 8 characters";
+    }
+
+    if (isSignup) {
+      if (!confirmPassword.trim()) {
+        next.confirmPassword = "Please confirm your password";
+      } else if (password !== confirmPassword) {
+        next.confirmPassword = "Passwords do not match";
+      }
     }
 
     setErrors(next);
@@ -52,6 +68,26 @@ export function LoginScreen() {
     setIsLoading(true);
     setErrors({});
 
+    if (isSignup) {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          confirmPassword,
+        }),
+      });
+
+      const json = (await res.json()) as { message?: string };
+      if (!res.ok) {
+        setIsLoading(false);
+        setErrors({ root: json.message || "Unable to create your account right now." });
+        return;
+      }
+    }
+
     const result = await signIn("credentials", {
       email,
       password,
@@ -62,7 +98,7 @@ export function LoginScreen() {
     setIsLoading(false);
 
     if (result?.error) {
-      setErrors({ root: "Invalid email or password. Demo: demo@tradejournal.app / demo123" });
+      setErrors({ root: isSignup ? "Account created, but sign in failed. Try signing in manually." : "Invalid email or password." });
       return;
     }
 
@@ -132,8 +168,8 @@ export function LoginScreen() {
             <div className="mb-3 flex justify-center">
               <BrandLogo iconClassName="h-16 w-16 rounded-2xl sm:h-18 sm:w-18" className="gap-0" showText={false} />
             </div>
-            <h1 className="mb-2 text-xl font-bold text-white sm:text-2xl">Alpha Journal</h1>
-            <p className="mb-3 text-sm text-slate-400">Track performance and sharpen your edge</p>
+            <h1 className="mb-2 text-xl font-bold text-white sm:text-2xl">{isSignup ? "Create your Alpha Journal account" : "Welcome back to Alpha Journal"}</h1>
+            <p className="mb-3 text-sm text-slate-400">{isSignup ? "Secure your journal with a real account and private data ownership" : "Track performance and sharpen your edge"}</p>
 
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -164,7 +200,7 @@ export function LoginScreen() {
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
             </svg>
-            {isLoading ? "Connecting..." : "Continue with Google"}
+            {isLoading ? "Connecting..." : isSignup ? "Sign up with Google" : "Continue with Google"}
           </motion.button>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6, duration: 0.5 }} className="relative mb-5">
@@ -173,6 +209,23 @@ export function LoginScreen() {
           </motion.div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {isSignup ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.65, duration: 0.5 }}>
+                <label className="mb-2 block text-sm font-semibold text-slate-300">Full Name</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setErrors((prev) => ({ ...prev, name: undefined, root: undefined }));
+                  }}
+                  className="h-12 w-full rounded-xl border-2 border-slate-700 bg-slate-800/50 px-4 py-2.5 text-white placeholder-slate-500 transition-all duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  placeholder="Nadeem Nasir"
+                />
+                {errors.name ? <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mt-1.5 text-sm text-red-400">{errors.name}</motion.p> : null}
+              </motion.div>
+            ) : null}
+
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7, duration: 0.5 }}>
               <label className="mb-2 block text-sm font-semibold text-slate-300">Email</label>
               <input
@@ -203,6 +256,23 @@ export function LoginScreen() {
               {errors.password ? <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mt-1.5 text-sm text-red-400">{errors.password}</motion.p> : null}
             </motion.div>
 
+            {isSignup ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.85, duration: 0.5 }}>
+                <label className="mb-2 block text-sm font-semibold text-slate-300">Confirm Password</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    setErrors((prev) => ({ ...prev, confirmPassword: undefined, root: undefined }));
+                  }}
+                  className="h-12 w-full rounded-xl border-2 border-slate-700 bg-slate-800/50 px-4 py-2.5 text-white placeholder-slate-500 transition-all duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  placeholder="Confirm your password"
+                />
+                {errors.confirmPassword ? <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mt-1.5 text-sm text-red-400">{errors.confirmPassword}</motion.p> : null}
+              </motion.div>
+            ) : null}
+
             {errors.root ? <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-rose-400">{errors.root}</motion.p> : null}
 
             <motion.button
@@ -223,9 +293,20 @@ export function LoginScreen() {
                   </svg>
                   Signing in...
                 </span>
-              ) : "Sign In"}
+              ) : isSignup ? "Create Account" : "Sign In"}
             </motion.button>
           </form>
+
+          <div className="mt-4 text-center text-sm text-slate-400">
+            {isSignup ? "Already have an account? " : "Need an account? "}
+            <button
+              type="button"
+              onClick={() => router.push(isSignup ? "/login" : "/signup")}
+              className="font-semibold text-emerald-400 transition hover:text-emerald-300"
+            >
+              {isSignup ? "Sign in" : "Create one"}
+            </button>
+          </div>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 0.5 }} className="mt-6 flex flex-wrap items-center justify-center gap-3 border-t border-slate-700/50 pt-4 sm:gap-5">
             <div className="flex items-center gap-2">

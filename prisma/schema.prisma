@@ -7,6 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+}
+
 enum TradeSide {
   LONG
   SHORT
@@ -121,4 +126,15 @@ model JournalEntry {
 
   @@index([entryDate])
   @@index([title])
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  name         String?
+  passwordHash String?
+  image        String?
+  authProvider AuthProvider @default(EMAIL)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 }
