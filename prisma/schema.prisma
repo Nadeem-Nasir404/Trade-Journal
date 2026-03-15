@@ -89,6 +89,7 @@ model Trade {
   riskUsd        Float
   resultUsd      Float
   status         TradeStatus    @default(RUNNING)
+  grade          String?
   setup          String?
   strategy       String?
   analysis       Json?

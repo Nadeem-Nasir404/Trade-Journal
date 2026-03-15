@@ -23,6 +23,7 @@ export const tradeSchema = z.object({
   riskUsd: z.coerce.number().nonnegative(),
   resultUsd: z.coerce.number(),
   status: z.nativeEnum(TradeStatus).optional().default(TradeStatus.RUNNING),
+  grade: z.string().trim().max(4).optional().or(z.literal("")),
   setup: z.string().trim().max(80).optional().or(z.literal("")),
   strategy: z.string().trim().max(80).optional().or(z.literal("")),
   analysis: tradeAnalysisSchema.optional().nullable(),

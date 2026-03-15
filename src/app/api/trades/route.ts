@@ -23,6 +23,10 @@ function isMissingAnalysisColumn(error: unknown) {
   return error instanceof Error && error.message.includes("Trade.analysis");
 }
 
+function isMissingGradeColumn(error: unknown) {
+  return error instanceof Error && error.message.includes("Trade.grade");
+}
+
 function parseFilters(searchParams: URLSearchParams) {
   const symbols = searchParams.get("symbols")?.split(",").filter(Boolean) ?? [];
   const accountId = searchParams.get("accountId") ?? undefined;
@@ -81,6 +85,7 @@ export async function GET(request: NextRequest) {
           riskUsd: true,
           resultUsd: true,
           status: true,
+          grade: true,
           setup: true,
           strategy: true,
           analysis: true,
@@ -100,7 +105,7 @@ export async function GET(request: NextRequest) {
         },
       });
     } catch (error) {
-      if (!isMissingAnalysisColumn(error)) throw error;
+      if (!isMissingAnalysisColumn(error) && !isMissingGradeColumn(error)) throw error;
       const legacyTrades = await prisma.trade.findMany({
         where,
         orderBy: [{ tradeDate: "desc" }, { id: "desc" }],
@@ -136,7 +141,7 @@ export async function GET(request: NextRequest) {
           createdAt: true,
         },
       });
-      trades = legacyTrades.map((trade) => ({ ...trade, analysis: null }));
+      trades = legacyTrades.map((trade) => ({ ...trade, analysis: null, grade: null }));
     }
 
     return NextResponse.json({ trades });
@@ -182,6 +187,7 @@ export async function POST(request: NextRequest) {
           riskUsd: parsed.riskUsd,
           resultUsd: parsed.resultUsd,
           status: parsed.status,
+          grade: parsed.grade || null,
           setup: parsed.setup || null,
           strategy: parsed.strategy || null,
           analysis: normalizeAnalysis(parsed.analysis),
@@ -191,7 +197,7 @@ export async function POST(request: NextRequest) {
         },
       });
     } catch (error) {
-      if (!isMissingAnalysisColumn(error)) throw error;
+      if (!isMissingAnalysisColumn(error) && !isMissingGradeColumn(error)) throw error;
       trade = await prisma.trade.create({
         data: {
           userId: session.user.id,

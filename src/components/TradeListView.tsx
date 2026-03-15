@@ -227,6 +227,11 @@ function TradeCard({
                   })}
                 </span>
                 {trade.setup ? <span className="rounded bg-slate-100 px-2 py-0.5 text-xs dark:bg-slate-800/50">{trade.setup}</span> : null}
+                {trade.grade ? (
+                  <span className="rounded border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-500 dark:text-emerald-300">
+                    Grade {trade.grade}
+                  </span>
+                ) : null}
               </div>
             </div>
           </div>

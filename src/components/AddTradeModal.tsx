@@ -50,6 +50,7 @@ export type TradeFormTrade = {
   riskUsd: number;
   resultUsd: number;
   status: TradeStatus;
+  grade?: string | null;
   setup: string | null;
   strategy: string | null;
   analysis?: TradeAnalysis | null;
@@ -168,6 +169,7 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
     takeProfit: "",
     quantity: "",
     result: "RUNNING" as TradeStatus,
+    grade: "",
     setup: "",
     strategy: "",
     analysis: defaultAnalysis,
@@ -188,6 +190,7 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
       takeProfit: initialTrade.takeProfit?.toString() ?? "",
       quantity: initialTrade.quantity?.toString() ?? "1",
       result: initialTrade.status,
+      grade: initialTrade.grade ?? "",
       setup: initialTrade.setup ?? "",
       strategy: initialTrade.strategy ?? "",
       analysis: {
@@ -213,6 +216,7 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
         takeProfit: "",
         quantity: "",
         result: "RUNNING",
+        grade: "",
         setup: "",
         strategy: "",
         analysis: defaultAnalysis,
@@ -356,6 +360,7 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
       setup: formData.setup,
       strategy: formData.strategy,
       analysis: formData.analysis,
+      grade: formData.grade,
       emotions: formData.emotions.join(", "),
       notes: formData.notes,
       screenshots: [] as string[],
@@ -586,6 +591,20 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
                           {marketConditionOptions.map((option) => <option key={option} value={option}>{option}</option>)}
                         </select>
                       </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Trade Grade</label>
+                      <select
+                        value={formData.grade}
+                        onChange={(e) => setFormData((p) => ({ ...p, grade: e.target.value }))}
+                        className="h-11 w-full rounded-xl border-2 border-slate-300 bg-white px-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white"
+                      >
+                        <option value="">Select grade...</option>
+                        {["A+", "A", "B", "C", "D", "F"].map((grade) => (
+                          <option key={grade} value={grade}>{grade}</option>
+                        ))}
+                      </select>
                     </div>
 
                     <div>
