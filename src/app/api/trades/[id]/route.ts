@@ -26,6 +26,10 @@ function isMissingGradeColumn(error: unknown) {
   return error instanceof Error && error.message.includes("Trade.grade");
 }
 
+function isMissingSessionColumn(error: unknown) {
+  return error instanceof Error && error.message.includes("Trade.session");
+}
+
 type Context = {
   params: Promise<{ id: string }>;
 };
@@ -43,7 +47,7 @@ export async function GET(_request: NextRequest, context: Context) {
       where: { id: Number(id), userId: session.user.id },
     });
   } catch (error) {
-    if (!isMissingAnalysisColumn(error) && !isMissingGradeColumn(error)) throw error;
+    if (!isMissingAnalysisColumn(error) && !isMissingGradeColumn(error) && !isMissingSessionColumn(error)) throw error;
     trade = await prisma.trade.findFirst({
       where: { id: Number(id), userId: session.user.id },
       select: {
@@ -64,6 +68,7 @@ export async function GET(_request: NextRequest, context: Context) {
         resultUsd: true,
         status: true,
         grade: true,
+        session: true,
         setup: true,
         strategy: true,
         emotions: true,
@@ -73,7 +78,7 @@ export async function GET(_request: NextRequest, context: Context) {
         journalEntryId: true,
       },
     });
-    trade = trade ? { ...trade, analysis: null, grade: null } : trade;
+    trade = trade ? { ...trade, analysis: null, grade: null, session: null } : trade;
   }
 
   if (!trade) {
@@ -131,6 +136,7 @@ export async function PATCH(request: NextRequest, context: Context) {
           resultUsd: parsed.resultUsd,
           status: parsed.status,
           grade: parsed.grade || null,
+          session: parsed.session || null,
           setup: parsed.setup || null,
           strategy: parsed.strategy || null,
           analysis: normalizeAnalysis(parsed.analysis),
@@ -140,7 +146,7 @@ export async function PATCH(request: NextRequest, context: Context) {
         },
       });
     } catch (error) {
-      if (!isMissingAnalysisColumn(error) && !isMissingGradeColumn(error)) throw error;
+      if (!isMissingAnalysisColumn(error) && !isMissingGradeColumn(error) && !isMissingSessionColumn(error)) throw error;
       trade = await prisma.trade.update({
         where: { id: tradeId },
         data: {

@@ -90,6 +90,7 @@ model Trade {
   resultUsd      Float
   status         TradeStatus    @default(RUNNING)
   grade          String?
+  session        String?
   setup          String?
   strategy       String?
   analysis       Json?

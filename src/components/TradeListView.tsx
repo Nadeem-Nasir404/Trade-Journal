@@ -250,6 +250,11 @@ function TradeCard({
                     Grade {trade.grade}
                   </span>
                 ) : null}
+                {trade.session ? (
+                  <span className="rounded border border-slate-300/60 bg-slate-100 px-2 py-0.5 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300">
+                    {trade.session}
+                  </span>
+                ) : null}
               </div>
             </div>
           </div>

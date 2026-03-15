@@ -51,6 +51,7 @@ export type TradeFormTrade = {
   resultUsd: number;
   status: TradeStatus;
   grade?: string | null;
+  session?: string | null;
   setup: string | null;
   strategy: string | null;
   analysis?: TradeAnalysis | null;
@@ -87,6 +88,7 @@ const resultOptions: ResultOption[] = [
 const emotionOptions = ["Confident", "Anxious", "Greedy", "Fearful", "Calm", "Impulsive", "Patient", "FOMO"];
 const timeframeOptions = ["1m", "5m", "15m", "30m", "1H", "4H", "1D", "1W"];
 const marketConditionOptions = ["Trending", "Range", "Breakout", "Reversal", "Volatile", "Low Liquidity"];
+const sessionOptions = ["Asia", "London", "New York", "Late Night", "Other"];
 const confluenceGroups = [
   {
     title: "Favorites",
@@ -173,6 +175,7 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
     quantity: "",
     result: "RUNNING" as TradeStatus,
     grade: "",
+    session: "",
     setup: "",
     strategy: "",
     analysis: defaultAnalysis,
@@ -194,6 +197,7 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
       quantity: initialTrade.quantity?.toString() ?? "1",
       result: initialTrade.status,
       grade: initialTrade.grade ?? "",
+      session: initialTrade.session ?? "",
       setup: initialTrade.setup ?? "",
       strategy: initialTrade.strategy ?? "",
       analysis: {
@@ -220,6 +224,7 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
         quantity: "",
         result: "RUNNING",
         grade: "",
+        session: "",
         setup: "",
         strategy: "",
         analysis: defaultAnalysis,
@@ -364,6 +369,7 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
       strategy: formData.strategy,
       analysis: formData.analysis,
       grade: formData.grade,
+      session: formData.session,
       emotions: formData.emotions.join(", "),
       notes: formData.notes,
       screenshots: [] as string[],
@@ -598,6 +604,22 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
                         <select value={formData.analysis.marketCondition} onChange={(e) => updateAnalysis("marketCondition", e.target.value)} className="h-11 w-full rounded-xl border-2 border-slate-300 bg-white px-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white">
                           <option value="">Select...</option>
                           {marketConditionOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Session</label>
+                        <select
+                          value={formData.session}
+                          onChange={(e) => setFormData((p) => ({ ...p, session: e.target.value }))}
+                          className="h-11 w-full rounded-xl border-2 border-slate-300 bg-white px-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white"
+                        >
+                          <option value="">Select session...</option>
+                          {sessionOptions.map((option) => (
+                            <option key={option} value={option}>{option}</option>
+                          ))}
                         </select>
                       </div>
                     </div>
