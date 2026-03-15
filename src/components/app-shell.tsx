@@ -59,16 +59,46 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className={cn("relative mb-5 overflow-hidden rounded-2xl border border-white/60 bg-white/70 p-2.5 shadow-sm backdrop-blur-xl dark:border-white/5 dark:bg-white/5", sidebarExpanded ? "mx-1" : "mx-0")}>
             <div className={cn("flex items-center", sidebarExpanded ? "justify-between gap-3" : "justify-center")}>
-              <BrandLogo iconClassName="h-10 w-10 rounded-2xl shadow-[0_10px_24px_-12px_rgba(16,185,129,0.7)]" className="gap-3" showText={sidebarExpanded} />
-              {sidebarExpanded ? (
+              <div className="flex min-w-0 items-center gap-3">
+                <BrandLogo iconClassName="h-10 w-10 rounded-2xl shadow-[0_10px_24px_-12px_rgba(16,185,129,0.7)]" className="gap-0" showText={false} />
                 <motion.div
-                  initial={prefersReducedMotion ? false : { opacity: 0, x: 8 }}
-                  animate={prefersReducedMotion ? undefined : { opacity: 1, x: 0 }}
-                  className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-300"
+                  initial={false}
+                  animate={
+                    prefersReducedMotion
+                      ? undefined
+                      : sidebarExpanded
+                        ? { width: "auto", opacity: 1, x: 0 }
+                        : { width: 0, opacity: 0, x: -6 }
+                  }
+                  transition={{ duration: 0.22, ease: "easeOut" }}
+                  className="overflow-hidden whitespace-nowrap"
                 >
-                  Pro
+                  <motion.span
+                    initial={false}
+                    animate={prefersReducedMotion ? undefined : sidebarExpanded ? { filter: "blur(0px)" } : { filter: "blur(6px)" }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    className="block text-sm font-semibold tracking-tight text-slate-900 dark:text-slate-100"
+                  >
+                    Alpha Journal
+                  </motion.span>
                 </motion.div>
-              ) : null}
+              </div>
+              <motion.div
+                initial={false}
+                animate={
+                  prefersReducedMotion
+                    ? undefined
+                    : sidebarExpanded
+                      ? { width: "auto", opacity: 1, scale: 1, marginLeft: 0 }
+                      : { width: 0, opacity: 0, scale: 0.92, marginLeft: -8 }
+                }
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="overflow-hidden"
+              >
+                <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-300">
+                  Pro
+                </div>
+              </motion.div>
             </div>
           </div>
 
@@ -113,11 +143,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     >
                       <Icon className={cn("h-4.5 w-4.5", active && "drop-shadow-[0_0_10px_rgba(16,185,129,0.45)]")} />
                     </span>
-                    {sidebarExpanded ? (
-                      <>
-                        <span className="relative z-10 flex-1">
-                          <span className={cn("block text-sm font-semibold", active ? "text-white" : "text-slate-900 dark:text-slate-100")}>{item.label}</span>
-                          <span className={cn("block text-[11px]", active ? "text-slate-300" : "text-slate-500 dark:text-slate-400")}>
+                    <motion.div
+                      initial={false}
+                      animate={
+                        prefersReducedMotion
+                          ? undefined
+                          : sidebarExpanded
+                            ? { width: "auto", opacity: 1, x: 0 }
+                            : { width: 0, opacity: 0, x: -8 }
+                      }
+                      transition={{ duration: 0.22, ease: "easeOut" }}
+                      className="relative z-10 flex min-w-0 flex-1 items-center overflow-hidden"
+                    >
+                      <motion.span
+                        initial={false}
+                        animate={prefersReducedMotion ? undefined : sidebarExpanded ? { filter: "blur(0px)" } : { filter: "blur(6px)" }}
+                        transition={{ duration: 0.18, ease: "easeOut" }}
+                        className="flex min-w-0 flex-1 items-center"
+                      >
+                        <span className="min-w-0 flex-1">
+                          <span className={cn("block whitespace-nowrap text-sm font-semibold", active ? "text-white" : "text-slate-900 dark:text-slate-100")}>{item.label}</span>
+                          <span className={cn("block whitespace-nowrap text-[11px]", active ? "text-slate-300" : "text-slate-500 dark:text-slate-400")}>
                             {item.label === "Journal"
                               ? "Reflections and lessons"
                               : item.label === "Trades"
@@ -131,9 +177,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                                       : "Assistant workspace"}
                           </span>
                         </span>
-                        <ChevronRight className={cn("relative z-10 h-4 w-4 transition-transform", active ? "translate-x-0 text-white" : "text-slate-400 group-hover:translate-x-0.5")} />
-                      </>
-                    ) : null}
+                        <ChevronRight className={cn("ml-3 h-4 w-4 shrink-0 transition-transform", active ? "translate-x-0 text-white" : "text-slate-400 group-hover:translate-x-0.5")} />
+                      </motion.span>
+                    </motion.div>
                   </Link>
                 </motion.div>
               );
