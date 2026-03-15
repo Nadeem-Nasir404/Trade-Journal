@@ -67,6 +67,7 @@ type Props = {
   onSaved: () => Promise<void> | void;
   initialTrade?: TradeFormTrade | null;
   mode?: "full" | "quick";
+  duplicate?: boolean;
 };
 
 type ResultOption = {
@@ -144,7 +145,7 @@ function getAccentClasses(accent: string) {
   }
 }
 
-export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, initialTrade, mode = "full" }: Props) {
+export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, initialTrade, mode = "full", duplicate = false }: Props) {
   const { selectedAccountId, setSelectedAccountId } = useSelectedAccount();
   const isQuick = mode === "quick";
   const [saving, setSaving] = useState(false);
@@ -390,8 +391,8 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
     payload.screenshots = uploadedUrls;
 
     setSaving(true);
-    const method = initialTrade ? "PATCH" : "POST";
-    const url = initialTrade ? `/api/trades/${initialTrade.id}` : "/api/trades";
+    const method = initialTrade && !duplicate ? "PATCH" : "POST";
+    const url = initialTrade && !duplicate ? `/api/trades/${initialTrade.id}` : "/api/trades";
     const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
     setSaving(false);
     if (!res.ok) {
@@ -428,7 +429,9 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
                 <div className="flex items-center gap-3">
                   <div className="rounded-lg bg-emerald-500/20 p-2"><TrendingUp className="h-5 w-5 text-emerald-400" /></div>
                   <div>
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">{initialTrade ? "Edit Trade" : "Add Trade"}</h2>
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                      {duplicate ? "Duplicate Trade" : initialTrade ? "Edit Trade" : "Add Trade"}
+                    </h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400">{new Date(selectedDate).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
                   </div>
                 </div>

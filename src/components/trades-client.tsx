@@ -33,6 +33,7 @@ export function TradesClient() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<TradeFormTrade | null>(null);
   const [modalMode, setModalMode] = useState<"full" | "quick">("full");
+  const [duplicateMode, setDuplicateMode] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
   const [loadError, setLoadError] = useState("");
   const [syncLoading, setSyncLoading] = useState(false);
@@ -180,6 +181,13 @@ export function TradesClient() {
         }}
         onEditTrade={(trade) => {
           setModalMode("full");
+          setDuplicateMode(false);
+          setEditing(trade);
+          setOpen(true);
+        }}
+        onDuplicateTrade={(trade) => {
+          setModalMode("full");
+          setDuplicateMode(true);
           setEditing(trade);
           setOpen(true);
         }}
@@ -202,13 +210,18 @@ export function TradesClient() {
 
       <AddTradeModal
         isOpen={open}
-        onClose={() => setOpen(false)}
+        onClose={() => {
+          setOpen(false);
+          setDuplicateMode(false);
+        }}
         selectedDate={selectedDate}
         initialTrade={editing}
         mode={modalMode}
+        duplicate={duplicateMode}
         onSaved={async () => {
           await loadTrades();
           setEditing(null);
+          setDuplicateMode(false);
         }}
       />
     </div>

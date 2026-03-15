@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   ChevronRight,
   Clock,
+  Copy,
   Edit,
   Eye,
   Minus,
@@ -54,6 +55,7 @@ export default function TradeListView({
   trades,
   onAddTrade,
   onQuickAddTrade,
+  onDuplicateTrade,
   onEditTrade,
   onDeleteTrade,
   onAddJournal,
@@ -63,6 +65,7 @@ export default function TradeListView({
   trades: TradeFormTrade[];
   onAddTrade: () => void;
   onQuickAddTrade?: () => void;
+  onDuplicateTrade?: (trade: TradeFormTrade) => void;
   onEditTrade: (trade: TradeFormTrade) => void;
   onDeleteTrade: (id: number) => void;
   onAddJournal?: (trade: TradeFormTrade) => void;
@@ -150,6 +153,7 @@ export default function TradeListView({
               trade={trade}
               delay={index * 0.05}
               onEdit={() => onEditTrade(trade)}
+              onDuplicate={() => onDuplicateTrade?.(trade)}
               onDelete={() => onDeleteTrade(trade.id)}
               onView={() => setSelectedTrade(trade)}
               onAddJournal={() => onAddJournal?.(trade)}
@@ -180,6 +184,7 @@ function TradeCard({
   trade,
   delay,
   onEdit,
+  onDuplicate,
   onDelete,
   onView,
   onAddJournal,
@@ -189,6 +194,7 @@ function TradeCard({
   trade: TradeFormTrade;
   delay: number;
   onEdit: () => void;
+  onDuplicate: () => void;
   onDelete: () => void;
   onView: () => void;
   onAddJournal: () => void;
@@ -299,6 +305,9 @@ function TradeCard({
           </div>
 
           <div className="flex items-center gap-2 self-end sm:self-auto">
+            <button onClick={onDuplicate} className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-emerald-500 dark:hover:bg-slate-800 dark:hover:text-emerald-300" title="Duplicate">
+              <Copy className="h-4 w-4" />
+            </button>
             <button onClick={onEdit} className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-blue-500 dark:hover:bg-slate-800 dark:hover:text-blue-400"><Edit className="h-4 w-4" /></button>
             <button onClick={onDelete} className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-rose-500 dark:hover:bg-slate-800 dark:hover:text-rose-400"><Trash2 className="h-4 w-4" /></button>
           </div>
