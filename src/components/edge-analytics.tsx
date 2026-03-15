@@ -179,6 +179,20 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
 
     const avgWin = filtered.filter((t) => t.resultUsd > 0).reduce((s, t) => s + t.resultUsd, 0) / Math.max(wins, 1);
     const avgLoss = filtered.filter((t) => t.resultUsd < 0).reduce((s, t) => s + t.resultUsd, 0) / Math.max(losses, 1);
+    const rMultiples = filtered.filter((t) => t.riskUsd > 0).map((t) => t.resultUsd / t.riskUsd);
+    const avgRMultiple = rMultiples.length
+      ? Number((rMultiples.reduce((s, v) => s + v, 0) / rMultiples.length).toFixed(2))
+      : 0;
+
+    const byHour = new Map<number, number>();
+    for (const t of filtered) {
+      const hour = new Date(t.tradeDate).getHours();
+      byHour.set(hour, (byHour.get(hour) ?? 0) + t.resultUsd);
+    }
+    const bestHourEntry = [...byHour.entries()].sort((a, b) => b[1] - a[1])[0];
+    const bestHour = bestHourEntry ? bestHourEntry[0] : null;
+    const bestHourPnL = Number((bestHourEntry?.[1] ?? 0).toFixed(2));
+    const bestHourLabel = bestHour === null ? "N/A" : `${String(bestHour).padStart(2, "0")}:00`;
 
     const warnings: string[] = [];
     const worstSetup = setupStats.filter((s) => s.trades >= 5).sort((a, b) => a.winRate - b.winRate)[0];
@@ -254,6 +268,9 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
       warnings,
       avgWin: Number(avgWin.toFixed(2)),
       avgLoss: Number(avgLoss.toFixed(2)),
+      avgRMultiple,
+      bestHourLabel,
+      bestHourPnL,
       trend,
       maxDrawdown: Number(maxDrawdown.toFixed(2)),
       maxDrawdownPct: Number(maxDrawdownPct.toFixed(2)),
@@ -307,11 +324,13 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
         </div>
       </div>
 
-      <div className="grid min-w-0 gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid min-w-0 gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
         <MetricCard icon={<Target className="h-4 w-4" />} label="Most Profitable Symbol" value={analytics.topSymbol} subtitle={`${usd(analytics.topSymbolProfit)} total`} tone="emerald" />
         <MetricCard icon={<Calendar className="h-4 w-4" />} label="Best Trading Day" value={analytics.bestDay} subtitle={usd(analytics.bestDayProfit)} tone="blue" />
         <MetricCard icon={<Zap className="h-4 w-4" />} label="Win Rate" value={`${analytics.winRate}%`} subtitle={`${analytics.wins}/${analytics.totalTrades} wins`} tone={analytics.winRate >= 50 ? "emerald" : "amber"} />
         <MetricCard icon={<TrendingUp className="h-4 w-4" />} label="Profit Factor" value={analytics.profitFactor.toString()} subtitle="Gross profit / Gross loss" tone={analytics.profitFactor >= 1.5 ? "emerald" : "rose"} />
+        <MetricCard icon={<Target className="h-4 w-4" />} label="Adjusted R-Multiple" value={`${analytics.avgRMultiple}R`} subtitle="Avg result / risk" tone={analytics.avgRMultiple >= 0.5 ? "emerald" : "amber"} />
+        <MetricCard icon={<Calendar className="h-4 w-4" />} label="Best Trading Hour" value={analytics.bestHourLabel} subtitle={usd(analytics.bestHourPnL)} tone={analytics.bestHourPnL >= 0 ? "emerald" : "rose"} />
       </div>
 
       <div className="grid gap-4">
