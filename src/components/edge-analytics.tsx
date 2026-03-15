@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { addDays, format, subDays } from "date-fns";
-import { AlertTriangle, Award, Brain, Calendar, Shield, Target, TrendingUp, Zap } from "lucide-react";
+import { AlertTriangle, Award, Brain, Calendar, Copy, Shield, Target, TrendingUp, Zap } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -51,6 +51,7 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
   const [trades, setTrades] = useState<ApiTrade[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [copiedRecap, setCopiedRecap] = useState<"weekly" | "monthly" | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -219,6 +220,23 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
     const currentDrawdown = peak - equity;
     const currentDrawdownPct = peak > 0 ? (currentDrawdown / peak) * 100 : 0;
 
+    function buildRecap(days: number) {
+      const since = subDays(new Date(), days);
+      const slice = trades.filter((t) => new Date(t.tradeDate) >= since);
+      const totalTrades = slice.length;
+      const wins = slice.filter((t) => t.resultUsd > 0).length;
+      const losses = slice.filter((t) => t.resultUsd < 0).length;
+      const totalPnL = slice.reduce((s, t) => s + t.resultUsd, 0);
+      const winRate = totalTrades ? Number(((wins / totalTrades) * 100).toFixed(1)) : 0;
+      return {
+        totalTrades,
+        wins,
+        losses,
+        totalPnL: Number(totalPnL.toFixed(2)),
+        winRate,
+      };
+    }
+
     return {
       totalTrades,
       wins,
@@ -241,8 +259,10 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
       maxDrawdownPct: Number(maxDrawdownPct.toFixed(2)),
       currentDrawdown: Number(currentDrawdown.toFixed(2)),
       currentDrawdownPct: Number(currentDrawdownPct.toFixed(2)),
+      recapWeekly: buildRecap(7),
+      recapMonthly: buildRecap(30),
     };
-  }, [filtered, timeRange]);
+  }, [filtered, timeRange, trades]);
 
   if (loading) return <Card><CardContent className="pt-6 text-sm text-slate-500">Loading analytics...</CardContent></Card>;
   if (error) return <Card><CardContent className="pt-6 text-sm text-rose-500">{error}</CardContent></Card>;
@@ -250,6 +270,21 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
   const totalAbs = Math.max(Math.abs(analytics.avgWin) + Math.abs(analytics.avgLoss), 1);
   const winWidth = (Math.abs(analytics.avgWin) / totalAbs) * 100;
   const lossWidth = (Math.abs(analytics.avgLoss) / totalAbs) * 100;
+
+  function copyRecap(type: "weekly" | "monthly") {
+    const recap = type === "weekly" ? analytics.recapWeekly : analytics.recapMonthly;
+    const label = type === "weekly" ? "Weekly" : "Monthly";
+    const text = [
+      `${label} Recap`,
+      `Trades: ${recap.totalTrades}`,
+      `Wins/Losses: ${recap.wins}/${recap.losses}`,
+      `Win Rate: ${recap.winRate}%`,
+      `PnL: ${usd(recap.totalPnL)}`,
+    ].join("\n");
+    void navigator.clipboard.writeText(text);
+    setCopiedRecap(type);
+    window.setTimeout(() => setCopiedRecap(null), 1500);
+  }
 
   return (
     <div className="min-w-0 space-y-5">
@@ -418,6 +453,45 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
           <PnlLineChart data={analytics.trend} />
         </CardContent>
       </Card>
+
+      <div className="grid min-w-0 gap-4 md:grid-cols-2">
+        {([
+          { id: "weekly", label: "Weekly Recap", data: analytics.recapWeekly },
+          { id: "monthly", label: "Monthly Recap", data: analytics.recapMonthly },
+        ] as const).map((recap) => (
+          <Card key={recap.id} className="border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center justify-between text-base">
+                <span>{recap.label}</span>
+                <Button type="button" variant="outline" size="sm" onClick={() => copyRecap(recap.id)}>
+                  <Copy className="h-4 w-4" />
+                  {copiedRecap === recap.id ? "Copied" : "Copy"}
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900/60">
+                <p className="text-xs text-slate-500">Total P&L</p>
+                <p className={`mt-1 font-mono text-xl font-bold ${recap.data.totalPnL >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+                  {recap.data.totalPnL >= 0 ? "+" : "-"}{usd(Math.abs(recap.data.totalPnL))}
+                </p>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900/60">
+                <p className="text-xs text-slate-500">Win Rate</p>
+                <p className="mt-1 font-mono text-xl font-bold text-emerald-500">{recap.data.winRate}%</p>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900/60">
+                <p className="text-xs text-slate-500">Trades</p>
+                <p className="mt-1 font-mono text-xl font-bold text-slate-700 dark:text-slate-200">{recap.data.totalTrades}</p>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900/60">
+                <p className="text-xs text-slate-500">Wins / Losses</p>
+                <p className="mt-1 font-mono text-xl font-bold text-slate-700 dark:text-slate-200">{recap.data.wins}/{recap.data.losses}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
