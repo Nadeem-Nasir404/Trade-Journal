@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { endOfDay, startOfDay } from "date-fns";
+import { getServerSession } from "next-auth";
 
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { journalEntrySchema, journalFiltersSchema } from "@/lib/validations/journal";
 
@@ -16,9 +18,15 @@ function parseFilters(searchParams: URLSearchParams) {
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
     const filters = parseFilters(request.nextUrl.searchParams);
 
     const where: Prisma.JournalEntryWhereInput = {
+      userId: session.user.id,
       OR: filters.q
         ? [
             { title: { contains: filters.q, mode: "insensitive" } },
@@ -87,6 +95,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
     const parsed = journalEntrySchema.parse({ ...body, score: body.score === "" ? null : body.score });
 
@@ -95,7 +108,7 @@ export async function POST(request: NextRequest) {
     const entry = await prisma.$transaction(async (tx) => {
       const created = await tx.journalEntry.create({
         data: {
-          userId: parsed.userId || null,
+          userId: session.user.id,
           entryDate: parsed.entryDate,
           title: parsed.title,
           content: parsed.content,
@@ -111,7 +124,7 @@ export async function POST(request: NextRequest) {
 
       if (linkedTradeIds.length) {
         await tx.trade.updateMany({
-          where: { id: { in: linkedTradeIds } },
+          where: { id: { in: linkedTradeIds }, userId: session.user.id },
           data: { journalEntryId: created.id },
         });
       }

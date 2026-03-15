@@ -25,7 +25,7 @@ export async function GET(_request: NextRequest, context: Context) {
 
   const { id } = await context.params;
   const trade = await prisma.trade.findFirst({
-    where: { id: Number(id), OR: [{ userId: session.user.id }, { userId: null }] },
+    where: { id: Number(id), userId: session.user.id },
   });
 
   if (!trade) {
@@ -48,7 +48,7 @@ export async function PATCH(request: NextRequest, context: Context) {
     const defaultAccount = await ensureDefaultAccount(session.user.id);
 
     const existing = await prisma.trade.findFirst({
-      where: { id: tradeId, OR: [{ userId: session.user.id }, { userId: null }] },
+      where: { id: tradeId, userId: session.user.id },
       select: { id: true },
     });
 
@@ -107,7 +107,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
     const { id } = await context.params;
     const tradeId = Number(id);
     const existing = await prisma.trade.findFirst({
-      where: { id: tradeId, OR: [{ userId: session.user.id }, { userId: null }] },
+      where: { id: tradeId, userId: session.user.id },
       select: { id: true },
     });
 

@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
   const maxTrades = Number.isFinite(maxTradesRaw) ? Math.max(1, Math.min(500, Math.trunc(maxTradesRaw))) : 200;
 
   const where: Prisma.TradeWhereInput = {
-    OR: [{ userId: session.user.id }, { userId: null }],
+    userId: session.user.id,
     accountId: accountId ? Number(accountId) : undefined,
     symbol: symbols.length ? { in: symbols } : undefined,
     tradeDate:
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       },
     }),
     prisma.trade.findMany({
-      where: { OR: [{ userId: session.user.id }, { userId: null }] },
+      where: { userId: session.user.id },
       distinct: ["symbol"],
       select: { symbol: true },
       orderBy: { symbol: "asc" },

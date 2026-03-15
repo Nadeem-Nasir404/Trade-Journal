@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     const filters = parseFilters(request.nextUrl.searchParams);
 
     const where: Prisma.TradeWhereInput = {
-      OR: [{ userId: session.user.id }, { userId: null }],
+      userId: session.user.id,
       accountId: filters.accountId ?? undefined,
       symbol: filters.symbols.length ? { in: filters.symbols } : undefined,
       tradeDate:

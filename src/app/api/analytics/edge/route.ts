@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
   const hasValidMonth = selectedMonth && !Number.isNaN(selectedMonth.getTime());
 
   const where: Prisma.TradeWhereInput = {
-    OR: [{ userId }, { userId: null }],
+    userId,
     accountId: accountId ? Number(accountId) : undefined,
     symbol: symbols.length ? { in: symbols } : undefined,
     tradeDate:

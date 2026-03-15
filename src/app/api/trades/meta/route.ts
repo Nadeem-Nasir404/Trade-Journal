@@ -11,7 +11,7 @@ export async function GET() {
   }
 
   const symbols = await prisma.trade.findMany({
-    where: { OR: [{ userId: session.user.id }, { userId: null }] },
+    where: { userId: session.user.id },
     distinct: ["symbol"],
     select: { symbol: true },
     orderBy: { symbol: "asc" },
