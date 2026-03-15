@@ -19,6 +19,10 @@ function normalizeAnalysis(value: unknown) {
   return value ? (value as Prisma.InputJsonValue) : Prisma.JsonNull;
 }
 
+function isMissingAnalysisColumn(error: unknown) {
+  return error instanceof Error && error.message.includes("Trade.analysis");
+}
+
 function parseFilters(searchParams: URLSearchParams) {
   const symbols = searchParams.get("symbols")?.split(",").filter(Boolean) ?? [];
   const accountId = searchParams.get("accountId") ?? undefined;
@@ -57,42 +61,83 @@ export async function GET(request: NextRequest) {
           : undefined,
     };
 
-    const trades = await prisma.trade.findMany({
-      where,
-      orderBy: [{ tradeDate: "desc" }, { id: "desc" }],
-      take: filters.maxTrades,
-      select: {
-        id: true,
-        userId: true,
-        tradeDate: true,
-        symbol: true,
-        side: true,
-        entryPrice: true,
-        exitPrice: true,
-        stopLoss: true,
-        takeProfit: true,
-        quantity: true,
-        riskUsd: true,
-        resultUsd: true,
-        status: true,
-        setup: true,
-        strategy: true,
-        analysis: true,
-        emotions: true,
-        notes: true,
-        screenshots: true,
-        journalEntryId: true,
-        accountId: true,
-        account: {
-          select: {
-            id: true,
-            name: true,
-            icon: true,
+    let trades;
+    try {
+      trades = await prisma.trade.findMany({
+        where,
+        orderBy: [{ tradeDate: "desc" }, { id: "desc" }],
+        take: filters.maxTrades,
+        select: {
+          id: true,
+          userId: true,
+          tradeDate: true,
+          symbol: true,
+          side: true,
+          entryPrice: true,
+          exitPrice: true,
+          stopLoss: true,
+          takeProfit: true,
+          quantity: true,
+          riskUsd: true,
+          resultUsd: true,
+          status: true,
+          setup: true,
+          strategy: true,
+          analysis: true,
+          emotions: true,
+          notes: true,
+          screenshots: true,
+          journalEntryId: true,
+          accountId: true,
+          account: {
+            select: {
+              id: true,
+              name: true,
+              icon: true,
+            },
           },
+          createdAt: true,
         },
-        createdAt: true,
-      },
-    });
+      });
+    } catch (error) {
+      if (!isMissingAnalysisColumn(error)) throw error;
+      const legacyTrades = await prisma.trade.findMany({
+        where,
+        orderBy: [{ tradeDate: "desc" }, { id: "desc" }],
+        take: filters.maxTrades,
+        select: {
+          id: true,
+          userId: true,
+          tradeDate: true,
+          symbol: true,
+          side: true,
+          entryPrice: true,
+          exitPrice: true,
+          stopLoss: true,
+          takeProfit: true,
+          quantity: true,
+          riskUsd: true,
+          resultUsd: true,
+          status: true,
+          setup: true,
+          strategy: true,
+          emotions: true,
+          notes: true,
+          screenshots: true,
+          journalEntryId: true,
+          accountId: true,
+          account: {
+            select: {
+              id: true,
+              name: true,
+              icon: true,
+            },
+          },
+          createdAt: true,
+        },
+      });
+      trades = legacyTrades.map((trade) => ({ ...trade, analysis: null }));
+    }
 
     return NextResponse.json({ trades });
   } catch (error) {
@@ -120,29 +165,56 @@ export async function POST(request: NextRequest) {
       takeProfit: normalizeNullableNumber(body.takeProfit),
     });
 
-    const trade = await prisma.trade.create({
-      data: {
-        userId: session.user.id,
-        accountId: parsed.accountId ?? defaultAccount.id,
-        tradeDate: parsed.tradeDate,
-        symbol: parsed.symbol.toUpperCase(),
-        side: parsed.side,
-        entryPrice: parsed.entryPrice ?? null,
-        exitPrice: parsed.exitPrice ?? null,
-        stopLoss: parsed.stopLoss ?? null,
-        takeProfit: parsed.takeProfit ?? null,
-        quantity: parsed.quantity ?? 1,
-        riskUsd: parsed.riskUsd,
-        resultUsd: parsed.resultUsd,
-        status: parsed.status,
-        setup: parsed.setup || null,
-        strategy: parsed.strategy || null,
-        analysis: normalizeAnalysis(parsed.analysis),
-        emotions: parsed.emotions || null,
-        notes: parsed.notes || null,
-        screenshots: parsed.screenshots ?? [],
-      },
-    });
+    let trade;
+    try {
+      trade = await prisma.trade.create({
+        data: {
+          userId: session.user.id,
+          accountId: parsed.accountId ?? defaultAccount.id,
+          tradeDate: parsed.tradeDate,
+          symbol: parsed.symbol.toUpperCase(),
+          side: parsed.side,
+          entryPrice: parsed.entryPrice ?? null,
+          exitPrice: parsed.exitPrice ?? null,
+          stopLoss: parsed.stopLoss ?? null,
+          takeProfit: parsed.takeProfit ?? null,
+          quantity: parsed.quantity ?? 1,
+          riskUsd: parsed.riskUsd,
+          resultUsd: parsed.resultUsd,
+          status: parsed.status,
+          setup: parsed.setup || null,
+          strategy: parsed.strategy || null,
+          analysis: normalizeAnalysis(parsed.analysis),
+          emotions: parsed.emotions || null,
+          notes: parsed.notes || null,
+          screenshots: parsed.screenshots ?? [],
+        },
+      });
+    } catch (error) {
+      if (!isMissingAnalysisColumn(error)) throw error;
+      trade = await prisma.trade.create({
+        data: {
+          userId: session.user.id,
+          accountId: parsed.accountId ?? defaultAccount.id,
+          tradeDate: parsed.tradeDate,
+          symbol: parsed.symbol.toUpperCase(),
+          side: parsed.side,
+          entryPrice: parsed.entryPrice ?? null,
+          exitPrice: parsed.exitPrice ?? null,
+          stopLoss: parsed.stopLoss ?? null,
+          takeProfit: parsed.takeProfit ?? null,
+          quantity: parsed.quantity ?? 1,
+          riskUsd: parsed.riskUsd,
+          resultUsd: parsed.resultUsd,
+          status: parsed.status,
+          setup: parsed.setup || null,
+          strategy: parsed.strategy || null,
+          emotions: parsed.emotions || null,
+          notes: parsed.notes || null,
+          screenshots: parsed.screenshots ?? [],
+        },
+      });
+    }
 
     return NextResponse.json({ trade }, { status: 201 });
   } catch (error) {
