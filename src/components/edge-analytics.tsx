@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { addDays, format, subDays } from "date-fns";
-import { AlertTriangle, Award, Brain, Calendar, Target, TrendingUp, Zap } from "lucide-react";
+import { AlertTriangle, Award, Brain, Calendar, Shield, Target, TrendingUp, Zap } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -203,6 +203,22 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
     }
     const trend = [...byDate.entries()].map(([date, pnl]) => ({ date, pnl: Number(pnl.toFixed(2)) }));
 
+    let equity = 0;
+    let peak = 0;
+    let maxDrawdown = 0;
+    let maxDrawdownPct = 0;
+    for (const t of sorted) {
+      equity += t.resultUsd;
+      peak = Math.max(peak, equity);
+      const drawdown = peak - equity;
+      if (drawdown > maxDrawdown) {
+        maxDrawdown = drawdown;
+        maxDrawdownPct = peak > 0 ? (drawdown / peak) * 100 : 0;
+      }
+    }
+    const currentDrawdown = peak - equity;
+    const currentDrawdownPct = peak > 0 ? (currentDrawdown / peak) * 100 : 0;
+
     return {
       totalTrades,
       wins,
@@ -221,6 +237,10 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
       avgWin: Number(avgWin.toFixed(2)),
       avgLoss: Number(avgLoss.toFixed(2)),
       trend,
+      maxDrawdown: Number(maxDrawdown.toFixed(2)),
+      maxDrawdownPct: Number(maxDrawdownPct.toFixed(2)),
+      currentDrawdown: Number(currentDrawdown.toFixed(2)),
+      currentDrawdownPct: Number(currentDrawdownPct.toFixed(2)),
     };
   }, [filtered, timeRange]);
 
@@ -322,6 +342,38 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base"><Shield className="h-4 w-4 text-rose-500" />Drawdown Tracker</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+              <p className="text-xs text-slate-500">Max Drawdown</p>
+              <p className="mt-1 font-mono text-2xl font-bold text-rose-500">-{usd(Math.abs(analytics.maxDrawdown))}</p>
+              <p className="text-xs text-slate-500">Peak drop: {analytics.maxDrawdownPct.toFixed(2)}%</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+              <p className="text-xs text-slate-500">Current Drawdown</p>
+              <p className="mt-1 font-mono text-2xl font-bold text-rose-500">-{usd(Math.abs(analytics.currentDrawdown))}</p>
+              <p className="text-xs text-slate-500">From peak: {analytics.currentDrawdownPct.toFixed(2)}%</p>
+            </div>
+          </div>
+          <div>
+            <div className="mb-2 flex items-center justify-between text-xs text-slate-500">
+              <span>Drawdown depth</span>
+              <span>{analytics.currentDrawdownPct.toFixed(1)}% of peak</span>
+            </div>
+            <div className="h-2 rounded-full bg-slate-200 dark:bg-slate-800">
+              <div
+                className="h-2 rounded-full bg-rose-500"
+                style={{ width: `${Math.min(100, Math.max(0, analytics.currentDrawdownPct))}%` }}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid min-w-0 gap-4 xl:grid-cols-2">
         <Card className="border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
