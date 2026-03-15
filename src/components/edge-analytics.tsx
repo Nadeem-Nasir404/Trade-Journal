@@ -52,6 +52,26 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [copiedRecap, setCopiedRecap] = useState<"weekly" | "monthly" | null>(null);
+  const [goals, setGoals] = useState({ dailyTradeLimit: 5, winRateTarget: 55, maxLossLimit: 500 });
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem("alpha-goals");
+    if (!stored) return;
+    try {
+      const parsed = JSON.parse(stored) as typeof goals;
+      setGoals({
+        dailyTradeLimit: Number(parsed.dailyTradeLimit) || 5,
+        winRateTarget: Number(parsed.winRateTarget) || 55,
+        maxLossLimit: Number(parsed.maxLossLimit) || 500,
+      });
+    } catch {
+      // ignore invalid storage
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("alpha-goals", JSON.stringify(goals));
+  }, [goals]);
 
   useEffect(() => {
     async function load() {
@@ -159,6 +179,8 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
       }))
       .sort((a, b) => b.trades - a.trades)
       .slice(0, 6);
+    const bestSetup = setupStats.slice().sort((a, b) => b.avgPnL - a.avgPnL)[0];
+    const worstSetup = setupStats.slice().sort((a, b) => a.avgPnL - b.avgPnL)[0];
 
     const sorted = [...filtered].sort((a, b) => +new Date(a.tradeDate) - +new Date(b.tradeDate));
     let currentWinStreak = 0;
@@ -278,6 +300,8 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
       currentDrawdownPct: Number(currentDrawdownPct.toFixed(2)),
       recapWeekly: buildRecap(7),
       recapMonthly: buildRecap(30),
+      bestSetup,
+      worstSetup,
     };
   }, [filtered, timeRange, trades]);
 
@@ -302,6 +326,10 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
     setCopiedRecap(type);
     window.setTimeout(() => setCopiedRecap(null), 1500);
   }
+
+  const weeklyTrades = analytics.recapWeekly.totalTrades;
+  const weeklyWinRate = analytics.recapWeekly.winRate;
+  const weeklyLoss = Math.abs(Math.min(0, analytics.recapWeekly.totalPnL));
 
   return (
     <div className="min-w-0 space-y-5">
@@ -369,6 +397,82 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
           ))}
         </CardContent>
       </Card>
+
+      <div className="grid min-w-0 gap-4 xl:grid-cols-2">
+        <Card className="border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base"><TrendingUp className="h-4 w-4 text-emerald-500" />Correlation Analysis</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+              <p className="text-xs text-emerald-500">Best Setup</p>
+              <p className="text-lg font-semibold text-slate-900 dark:text-white">{analytics.bestSetup?.name ?? "N/A"}</p>
+              <p className="text-xs text-slate-500">Avg P&L: {analytics.bestSetup ? usd(analytics.bestSetup.avgPnL) : "N/A"} • Win rate: {analytics.bestSetup?.winRate ?? 0}%</p>
+            </div>
+            <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 p-4">
+              <p className="text-xs text-rose-500">Needs Attention</p>
+              <p className="text-lg font-semibold text-slate-900 dark:text-white">{analytics.worstSetup?.name ?? "N/A"}</p>
+              <p className="text-xs text-slate-500">Avg P&L: {analytics.worstSetup ? usd(analytics.worstSetup.avgPnL) : "N/A"} • Win rate: {analytics.worstSetup?.winRate ?? 0}%</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base"><Target className="h-4 w-4 text-sky-500" />Performance Goals</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-3 md:grid-cols-3">
+              <div>
+                <label className="text-xs text-slate-500">Daily Trade Limit</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={goals.dailyTradeLimit}
+                  onChange={(e) => setGoals((p) => ({ ...p, dailyTradeLimit: Number(e.target.value) || 1 }))}
+                  className="mt-1 h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-800 dark:bg-slate-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-slate-500">Win Rate Target %</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={goals.winRateTarget}
+                  onChange={(e) => setGoals((p) => ({ ...p, winRateTarget: Number(e.target.value) || 1 }))}
+                  className="mt-1 h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-800 dark:bg-slate-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-slate-500">Max Weekly Loss</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={goals.maxLossLimit}
+                  onChange={(e) => setGoals((p) => ({ ...p, maxLossLimit: Number(e.target.value) || 0 }))}
+                  className="mt-1 h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-800 dark:bg-slate-900 dark:text-white"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Weekly trades</span>
+                <span className="font-mono text-slate-700 dark:text-slate-200">{weeklyTrades} / {goals.dailyTradeLimit * 7}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Weekly win rate</span>
+                <span className="font-mono text-slate-700 dark:text-slate-200">{weeklyWinRate}% / {goals.winRateTarget}%</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Weekly loss</span>
+                <span className={`font-mono ${weeklyLoss <= goals.maxLossLimit ? "text-emerald-500" : "text-rose-500"}`}>{usd(weeklyLoss)} / {usd(goals.maxLossLimit)}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="grid min-w-0 gap-4 xl:grid-cols-2">
         <Card className="border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 to-emerald-500/5">
