@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Sparkles, X } from "lucide-react";
 
 import { JournalEmptyState } from "@/components/BeautifulEmptyStates";
 import { JournalEntryModal, type JournalFormValues } from "@/components/JournalEntryModal";
@@ -40,6 +40,8 @@ type Entry = {
   };
 };
 
+type SortOption = "NEWEST" | "OLDEST" | "HIGHEST_SCORE" | "LOWEST_SCORE" | "TITLE";
+
 const blankForm: JournalFormValues = {
   entryDate: new Date().toISOString().slice(0, 10),
   title: "",
@@ -68,7 +70,10 @@ export function JournalClient() {
   const [form, setForm] = useState(blankForm);
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [entryTypeFilter, setEntryTypeFilter] = useState<"ALL" | "TRADE" | "DAILY" | "WEEKLY">("ALL");
+  const [sortBy, setSortBy] = useState<SortOption>("NEWEST");
 
   useEffect(() => {
     const id = setTimeout(() => setDebouncedQuery(query), 300);
@@ -78,6 +83,8 @@ export function JournalClient() {
   async function loadEntries() {
     const params = new URLSearchParams();
     if (debouncedQuery.trim()) params.set("q", debouncedQuery.trim());
+    if (fromDate) params.set("from", fromDate);
+    if (toDate) params.set("to", toDate);
     const res = await fetch(`/api/journal?${params.toString()}`);
     const json = await res.json();
     setEntries(json.entries ?? []);
@@ -86,7 +93,7 @@ export function JournalClient() {
   useEffect(() => {
     void loadEntries();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedQuery]);
+  }, [debouncedQuery, fromDate, toDate]);
 
   useEffect(() => {
     const tradeIdParam = searchParams.get("tradeId");
@@ -120,9 +127,30 @@ export function JournalClient() {
   }, [entries]);
 
   const filteredEntries = useMemo(() => {
-    if (entryTypeFilter === "ALL") return entries;
-    return entries.filter((entry) => entry.tags?.toLowerCase().includes(entryTypeFilter.toLowerCase()));
-  }, [entries, entryTypeFilter]);
+    const scopedEntries =
+      entryTypeFilter === "ALL"
+        ? entries
+        : entries.filter((entry) => entry.tags?.toLowerCase().includes(entryTypeFilter.toLowerCase()));
+
+    return [...scopedEntries].sort((a, b) => {
+      switch (sortBy) {
+        case "OLDEST":
+          return new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime();
+        case "HIGHEST_SCORE":
+          return (b.score ?? -1) - (a.score ?? -1);
+        case "LOWEST_SCORE":
+          return (a.score ?? 11) - (b.score ?? 11);
+        case "TITLE":
+          return a.title.localeCompare(b.title);
+        case "NEWEST":
+        default:
+          return new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime();
+      }
+    });
+  }, [entries, entryTypeFilter, sortBy]);
+
+  const hasActiveSearch = query.trim().length > 0;
+  const hasActiveDateFilter = Boolean(fromDate || toDate);
 
   async function saveEntry() {
     const linkedTradeIds = form.linkedTradeIds
@@ -215,31 +243,53 @@ export function JournalClient() {
     setOpen(true);
   }
 
+  function clearFilters() {
+    setQuery("");
+    setFromDate("");
+    setToDate("");
+    setEntryTypeFilter("ALL");
+    setSortBy("NEWEST");
+  }
+
   return (
     <div className="min-w-0 space-y-5">
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900/90">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Journal Timeline</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Capture thought process, emotions, and lessons with execution context</p>
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900/90">
+        <div className="bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.14),_transparent_35%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.10),_transparent_30%)] p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Journal Timeline</h1>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Capture thought process, emotions, and lessons with execution context</p>
+            </div>
+            <Button
+              onClick={() => {
+                setEditingId(null);
+                setForm(blankForm);
+                setOpen(true);
+              }}
+              className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-3 font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all hover:from-emerald-600 hover:to-teal-700 sm:w-auto"
+            >
+              <Plus className="h-4 w-4" />
+              New Entry
+            </Button>
           </div>
-          <Button
-            onClick={() => {
-              setEditingId(null);
-              setForm(blankForm);
-              setOpen(true);
-            }}
-            className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-3 font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all hover:from-emerald-600 hover:to-teal-700 sm:w-auto"
-          >
-            <Plus className="h-4 w-4" />
-            New Entry
-          </Button>
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 lg:grid-cols-[1.1fr_0.9fr_1.1fr]">
         <Card className="border-emerald-300/60 bg-gradient-to-br from-emerald-500/10 to-emerald-500/5"><CardHeader className="pb-2"><CardTitle>Total Entries</CardTitle></CardHeader><CardContent className="text-3xl font-black text-emerald-600 dark:text-emerald-400">{stats.count}</CardContent></Card>
         <Card className="border-blue-300/60 bg-gradient-to-br from-blue-500/10 to-blue-500/5"><CardHeader className="pb-2"><CardTitle>Average Score</CardTitle></CardHeader><CardContent className="text-3xl font-black text-blue-600 dark:text-blue-400">{stats.avgScore ?? "-"}</CardContent></Card>
+        <Card className="border-slate-200 bg-gradient-to-br from-slate-50 to-white dark:border-slate-700 dark:from-slate-900 dark:to-slate-900/70">
+          <CardHeader className="pb-2">
+            <CardTitle className="inline-flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-emerald-500" />
+              Search Tips
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1.5 text-sm text-slate-600 dark:text-slate-300">
+            <p>Search by title, lesson, reflection text, or tags.</p>
+            <p>Try keywords like `discipline`, `breakout`, `revenge`, or a symbol name.</p>
+          </CardContent>
+        </Card>
       </div>
 
       <Card className="border-slate-200 bg-white backdrop-blur dark:border-slate-700 dark:bg-slate-900/60">
@@ -247,7 +297,16 @@ export function JournalClient() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="relative flex-1">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input className="pl-9" placeholder="Search by title, tag, or content..." value={query} onChange={(e) => setQuery(e.target.value)} />
+              <Input className="pl-9 pr-10" placeholder="Search by title, tag, lesson, or content..." value={query} onChange={(e) => setQuery(e.target.value)} />
+              {hasActiveSearch ? (
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              ) : null}
             </div>
             <div className="flex flex-wrap gap-2">
               {(["ALL", "TRADE", "DAILY", "WEEKLY"] as const).map((type) => (
@@ -258,11 +317,63 @@ export function JournalClient() {
             </div>
           </div>
 
+          <div className="grid gap-3 lg:grid-cols-[1fr_1fr_220px_auto]">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">From</label>
+              <Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">To</label>
+              <Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Sort By</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50"
+              >
+                <option value="NEWEST">Newest</option>
+                <option value="OLDEST">Oldest</option>
+                <option value="HIGHEST_SCORE">Highest Score</option>
+                <option value="LOWEST_SCORE">Lowest Score</option>
+                <option value="TITLE">Title A-Z</option>
+              </select>
+            </div>
+            <div className="flex items-end">
+              <Button type="button" variant="outline" className="w-full" onClick={clearFilters}>
+                Reset
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800/50">
+            <div className="flex flex-wrap items-center gap-2 text-slate-600 dark:text-slate-300">
+              <span className="font-medium">{filteredEntries.length}</span>
+              <span>{filteredEntries.length === 1 ? "entry" : "entries"} shown</span>
+              {hasActiveSearch ? (
+                <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-300">
+                  Search: {query.trim()}
+                </span>
+              ) : null}
+              {hasActiveDateFilter ? (
+                <span className="rounded-full bg-blue-500/10 px-2.5 py-1 text-xs font-semibold text-blue-600 dark:text-blue-300">
+                  Range: {fromDate || "Any"} to {toDate || "Any"}
+                </span>
+              ) : null}
+              <span className="rounded-full bg-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                Sort: {sortBy.toLowerCase().replaceAll("_", " ")}
+              </span>
+            </div>
+            <p className="text-xs capitalize text-slate-500 dark:text-slate-400">Showing {sortBy.toLowerCase().replaceAll("_", " ")}</p>
+          </div>
+
           <div className="space-y-4">
             {filteredEntries.map((entry, idx) => (
               <PolishedJournalCard
                 key={entry.id}
                 entry={entry}
+                searchQuery={debouncedQuery}
                 delay={idx * 0.05}
                 expanded={expandedIds.includes(entry.id)}
                 onToggle={() => setExpandedIds((prev) => (prev.includes(entry.id) ? prev.filter((id) => id !== entry.id) : [...prev, entry.id]))}
