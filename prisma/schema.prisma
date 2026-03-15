@@ -74,7 +74,7 @@ model TradingAccount {
 
 model Trade {
   id             Int           @id @default(autoincrement())
-  userId         String?
+  userId         String
   accountId      Int?
   source         String?
   externalId     String?
@@ -109,7 +109,7 @@ model Trade {
 
 model JournalEntry {
   id               Int     @id @default(autoincrement())
-  userId           String?
+  userId           String
   entryDate        DateTime
   title            String
   content          String
