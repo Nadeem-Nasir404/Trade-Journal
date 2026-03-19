@@ -217,8 +217,8 @@ export function EdgeAnalytics({ filters }: { filters?: AnalyticsFilters }) {
     const bestHourLabel = bestHour === null ? "N/A" : `${String(bestHour).padStart(2, "0")}:00`;
 
     const warnings: string[] = [];
-    const worstSetup = setupStats.filter((s) => s.trades >= 5).sort((a, b) => a.winRate - b.winRate)[0];
-    if (worstSetup && worstSetup.winRate < 40) warnings.push(`${worstSetup.name} setup has ${worstSetup.winRate}% win rate.`);
+    const worstSetupByWinrate = setupStats.filter((s) => s.trades >= 5).sort((a, b) => a.winRate - b.winRate)[0];
+    if (worstSetupByWinrate && worstSetupByWinrate.winRate < 40) warnings.push(`${worstSetupByWinrate.name} setup has ${worstSetupByWinrate.winRate}% win rate.`);
     const fomo = emotionStats.find((e) => e.name.toLowerCase() === "fomo");
     if (fomo && fomo.winRate < 40) warnings.push("FOMO-tagged trades are underperforming.");
     const recent7 = filtered.filter((t) => new Date(t.tradeDate) >= subDays(new Date(), 7)).length;
