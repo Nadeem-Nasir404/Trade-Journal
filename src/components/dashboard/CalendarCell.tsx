@@ -71,7 +71,17 @@ export function CalendarCell({
     };
   }, [day]);
 
-  const cellColor = useMemo(() => getCellColor(day.pnl), [day.pnl]);
+  const isFutureDay = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = parseISO(day.date);
+    target.setHours(0, 0, 0, 0);
+    return target.getTime() > today.getTime();
+  }, [day.date]);
+  const cellColor = useMemo(
+    () => (isFutureDay ? "border-slate-200 bg-slate-50/70 text-slate-500 dark:border-slate-800 dark:bg-slate-900/40" : getCellColor(day.pnl)),
+    [day.pnl, isFutureDay],
+  );
 
   function openTooltip() {
     if (hoverTimer.current) clearTimeout(hoverTimer.current);
@@ -118,7 +128,7 @@ export function CalendarCell({
       <p
         className={cn(
           "mt-1 text-[11px] font-extrabold leading-tight sm:mt-2 sm:text-sm",
-          day.pnl >= 0 ? "text-emerald-700 dark:text-emerald-200" : "text-rose-700 dark:text-rose-200",
+          isFutureDay ? "text-slate-400 dark:text-slate-500" : day.pnl >= 0 ? "text-emerald-700 dark:text-emerald-200" : "text-rose-700 dark:text-rose-200",
         )}
       >
         <span className="sm:hidden">
