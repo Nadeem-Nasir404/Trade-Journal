@@ -30,6 +30,15 @@ function isMissingSessionColumn(error: unknown) {
   return error instanceof Error && error.message.includes("Trade.session");
 }
 
+async function ensureAccountOwnership(userId: string, accountId?: number | null) {
+  if (!accountId) return null;
+  const account = await prisma.tradingAccount.findFirst({
+    where: { id: accountId, userId },
+    select: { id: true },
+  });
+  return account ? accountId : null;
+}
+
 type Context = {
   params: Promise<{ id: string }>;
 };
@@ -117,13 +126,18 @@ export async function PATCH(request: NextRequest, context: Context) {
       takeProfit: normalizeNullableNumber(body.takeProfit),
     });
 
+    const ownedAccountId = await ensureAccountOwnership(session.user.id, parsed.accountId ?? null);
+    if (parsed.accountId && !ownedAccountId) {
+      return NextResponse.json({ message: "Invalid account access" }, { status: 403 });
+    }
+
     let trade;
     try {
       trade = await prisma.trade.update({
         where: { id: tradeId },
         data: {
           userId: session.user.id,
-          accountId: parsed.accountId ?? defaultAccount.id,
+          accountId: ownedAccountId ?? defaultAccount.id,
           tradeDate: parsed.tradeDate,
           symbol: parsed.symbol.toUpperCase(),
           side: parsed.side,
@@ -151,7 +165,7 @@ export async function PATCH(request: NextRequest, context: Context) {
         where: { id: tradeId },
         data: {
           userId: session.user.id,
-          accountId: parsed.accountId ?? defaultAccount.id,
+          accountId: ownedAccountId ?? defaultAccount.id,
           tradeDate: parsed.tradeDate,
           symbol: parsed.symbol.toUpperCase(),
           side: parsed.side,

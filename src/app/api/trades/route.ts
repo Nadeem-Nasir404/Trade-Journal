@@ -47,6 +47,15 @@ function parseFilters(searchParams: URLSearchParams) {
   });
 }
 
+async function ensureAccountOwnership(userId: string, accountId?: number | null) {
+  if (!accountId) return null;
+  const account = await prisma.tradingAccount.findFirst({
+    where: { id: accountId, userId },
+    select: { id: true },
+  });
+  return account ? accountId : null;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -175,12 +184,17 @@ export async function POST(request: NextRequest) {
       takeProfit: normalizeNullableNumber(body.takeProfit),
     });
 
+    const ownedAccountId = await ensureAccountOwnership(session.user.id, parsed.accountId ?? null);
+    if (parsed.accountId && !ownedAccountId) {
+      return NextResponse.json({ message: "Invalid account access" }, { status: 403 });
+    }
+
     let trade;
     try {
       trade = await prisma.trade.create({
         data: {
           userId: session.user.id,
-          accountId: parsed.accountId ?? defaultAccount.id,
+          accountId: ownedAccountId ?? defaultAccount.id,
           tradeDate: parsed.tradeDate,
           symbol: parsed.symbol.toUpperCase(),
           side: parsed.side,
@@ -207,7 +221,7 @@ export async function POST(request: NextRequest) {
       trade = await prisma.trade.create({
         data: {
           userId: session.user.id,
-          accountId: parsed.accountId ?? defaultAccount.id,
+          accountId: ownedAccountId ?? defaultAccount.id,
           tradeDate: parsed.tradeDate,
           symbol: parsed.symbol.toUpperCase(),
           side: parsed.side,
