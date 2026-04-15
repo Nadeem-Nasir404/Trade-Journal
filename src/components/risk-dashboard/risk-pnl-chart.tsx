@@ -11,7 +11,7 @@ export function RiskPnlChart({ data }: { data: Array<{ date: string; pnl: number
         <LineChart data={data}>
           <XAxis dataKey="date" tick={{ fill: "currentColor", fontSize: 12 }} />
           <YAxis tickFormatter={(value) => formatUsd(Number(value))} tick={{ fill: "currentColor", fontSize: 12 }} width={92} />
-          <Tooltip formatter={(value: number) => formatUsd(value)} />
+          <Tooltip formatter={(value) => formatUsd(Number(value ?? 0))} />
           <Line type="monotone" dataKey="pnl" stroke="#0f766e" strokeWidth={3} dot={false} />
         </LineChart>
       </ResponsiveContainer>

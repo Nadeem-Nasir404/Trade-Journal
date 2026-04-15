@@ -12,7 +12,7 @@ export function RiskTargetsChart({ data }: { data: Array<{ name: string; value: 
           <CartesianGrid strokeDasharray="3 3" stroke="rgb(148 163 184 / 0.25)" />
           <XAxis dataKey="name" tick={{ fill: "currentColor", fontSize: 12 }} />
           <YAxis tickFormatter={(value) => formatUsd(Number(value))} tick={{ fill: "currentColor", fontSize: 12 }} width={92} />
-          <Tooltip formatter={(value: number) => formatUsd(value)} />
+          <Tooltip formatter={(value) => formatUsd(Number(value ?? 0))} />
           <Bar dataKey="value" radius={[8, 8, 0, 0]} fill="#10b981" />
         </BarChart>
       </ResponsiveContainer>
