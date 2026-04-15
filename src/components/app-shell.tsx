@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { BarChart3, Bot, BriefcaseBusiness, ChevronRight, LayoutDashboard, Menu, NotebookPen, ScrollText, X } from "lucide-react";
+import { BarChart3, Bot, BriefcaseBusiness, ChevronRight, LayoutDashboard, Menu, NotebookPen, ScrollText, ShieldAlert, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { AccountMenu } from "@/components/account-menu";
@@ -16,6 +16,7 @@ const nav = [
   { href: "/journal", label: "Journal", icon: NotebookPen },
   { href: "/trades", label: "Trades", icon: ScrollText },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/risk", label: "Risk", icon: ShieldAlert },
   { href: "/accounts", label: "Accounts", icon: BriefcaseBusiness },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/ai-chat", label: "AI Chat", icon: Bot },

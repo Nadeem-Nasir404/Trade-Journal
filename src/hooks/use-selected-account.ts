@@ -14,9 +14,13 @@ export function useSelectedAccount() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const stored = window.localStorage.getItem(storageKey);
-    const parsed = Number(stored);
-    setSelectedAccountIdState(Number.isFinite(parsed) && parsed > 0 ? parsed : null);
+    const timeoutId = window.setTimeout(() => {
+      const stored = window.localStorage.getItem(storageKey);
+      const parsed = Number(stored);
+      setSelectedAccountIdState(Number.isFinite(parsed) && parsed > 0 ? parsed : null);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [storageKey]);
 
   useEffect(() => {

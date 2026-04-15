@@ -1,0 +1,83 @@
+import { ChartWrapper } from "@/components/ui/ChartWrapper";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ProgressBar } from "@/components/risk-dashboard/progress-bar";
+import { RiskPnlChart } from "@/components/risk-dashboard/risk-pnl-chart";
+import type { RiskDashboardResponse } from "@/components/risk-dashboard/types";
+import { formatUsd, statusMeta } from "@/components/risk-dashboard/utils";
+
+export function DrawdownTab({ data }: { data: RiskDashboardResponse }) {
+  const drawdown = data.dashboard.drawdown;
+  const status = statusMeta(drawdown.status);
+
+  return (
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+      <div className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Drawdown Tracker</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div className="grid gap-3 md:grid-cols-2">
+              <Stat title="Today's P&L" value={formatUsd(drawdown.todayPnl)} />
+              <Stat title="Cumulative Overall Loss" value={formatUsd(drawdown.cumulativeOverallLoss)} />
+              <Stat title="Remaining Daily Risk" value={formatUsd(drawdown.remainingDailyRisk)} />
+              <Stat title="Remaining Overall Risk" value={formatUsd(drawdown.remainingOverallRisk)} />
+            </div>
+
+            <ProgressBar label="Daily DD used" value={drawdown.dailyProgress} tone={drawdown.dailyProgress >= 80 ? "rose" : drawdown.dailyProgress >= 60 ? "amber" : "emerald"} />
+            <ProgressBar label="Overall DD used" value={drawdown.overallProgress} tone={drawdown.overallProgress >= 75 ? "rose" : drawdown.overallProgress >= 50 ? "amber" : "sky"} />
+
+            <div className={`rounded-xl border px-4 py-3 text-sm font-semibold ${status.className}`}>{status.label}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Trade Log</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead className="text-left text-slate-500 dark:text-slate-400">
+                  <tr>
+                    <th className="py-2 pr-4">Date</th>
+                    <th className="py-2 pr-4">Asset</th>
+                    <th className="py-2 pr-4">Status</th>
+                    <th className="py-2 pr-4">Risk</th>
+                    <th className="py-2 pr-0 text-right">P&amp;L</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.dashboard.tradeLog.map((trade) => (
+                    <tr key={trade.id} className="border-t border-slate-200 dark:border-slate-800">
+                      <td className="py-3 pr-4">{trade.tradeDate.slice(0, 10)}</td>
+                      <td className="py-3 pr-4 font-medium text-slate-900 dark:text-slate-100">{trade.symbol}</td>
+                      <td className="py-3 pr-4"><Badge>{trade.status}</Badge></td>
+                      <td className="py-3 pr-4">{formatUsd(trade.riskUsd)}</td>
+                      <td className={`py-3 pl-4 text-right font-semibold ${trade.resultUsd >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>{formatUsd(trade.resultUsd)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {data.dashboard.tradeLog.length === 0 ? <p className="py-6 text-sm text-slate-500 dark:text-slate-400">No trades yet for this account. Add trades to your journal and the tracker will start deriving risk usage automatically.</p> : null}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <ChartWrapper title="30-Day P&L Curve" description="Realized cumulative P&L from this account's saved trades">
+        <RiskPnlChart data={data.dashboard.charts.cumulativePnl} />
+      </ChartWrapper>
+    </div>
+  );
+}
+
+function Stat({ title, value }: { title: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
+      <p className="text-sm text-slate-500 dark:text-slate-400">{title}</p>
+      <p className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-100">{value}</p>
+    </div>
+  );
+}
