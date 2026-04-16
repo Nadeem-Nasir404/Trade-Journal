@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Bitcoin, Coins, ShieldCheck, WalletCards } from "lucide-react";
+import { AlertTriangle, Bitcoin, Coins, ShieldCheck, WalletCards } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,18 +22,34 @@ export function PositionSizerTab({ data }: { data: RiskDashboardResponse }) {
 
   const computed = useMemo(() => {
     const riskDollars = (overview.accountSize * riskPercent) / 100;
+    const maxTradesToday = Math.max(Math.floor(overview.safeStop / Math.max(riskDollars, 1)), 0);
     if (assetMode === "BTC") {
       const stopPct = btcPrice > 0 ? btcStop / btcPrice : 0;
       const positionUsd = stopPct > 0 ? riskDollars / stopPct : 0;
       const positionSize = btcPrice > 0 ? positionUsd / btcPrice : 0;
+      const accountUsedPct = overview.accountSize > 0 ? (positionUsd / overview.accountSize) * 100 : 0;
+      const cappedPositionUsd = Math.min(positionUsd, overview.accountSize);
+      const cappedPositionSize = btcPrice > 0 ? cappedPositionUsd / btcPrice : 0;
+      const exceedsAccount = positionUsd > overview.accountSize;
       return {
         riskDollars,
+        stopPct,
+        positionUsd,
+        accountUsedPct,
+        exceedsAccount,
+        feasiblePosition: `${cappedPositionSize.toFixed(5)} BTC`,
+        warning: exceedsAccount
+          ? `This setup needs ${formatUsd(positionUsd)} of notional exposure, which is more than your ${formatUsd(overview.accountSize)} account. Either reduce risk, tighten the stop, or use leverage intentionally.`
+          : null,
         entries: [
-          ["Position Size", `${positionSize.toFixed(5)} BTC`],
-          ["% Of Account Used", formatPct((positionUsd / overview.accountSize) * 100)],
+          ["Risk-Based Size", `${positionSize.toFixed(5)} BTC`],
+          ["Feasible Spot Size", `${cappedPositionSize.toFixed(5)} BTC`],
+          ["Required Notional", formatUsd(positionUsd)],
+          ["% Of Account Used", formatPct(accountUsedPct)],
+          ["Stop Distance", formatPct(stopPct * 100)],
           ["TP at 1:2", formatUsd(btcPrice + btcStop * 2)],
           ["TP at 1:3", formatUsd(btcPrice + btcStop * 3)],
-          ["Max Trades Allowed Today", `${Math.max(Math.floor(overview.safeStop / Math.max(riskDollars, 1)), 0)} trades`],
+          ["Max Trades Allowed Today", `${maxTradesToday} trades`],
         ],
       };
     }
@@ -41,15 +57,30 @@ export function PositionSizerTab({ data }: { data: RiskDashboardResponse }) {
     const stopPct = altStopPct / 100;
     const positionUsd = stopPct > 0 ? riskDollars / stopPct : 0;
     const units = altPrice > 0 ? positionUsd / altPrice : 0;
+    const accountUsedPct = overview.accountSize > 0 ? (positionUsd / overview.accountSize) * 100 : 0;
+    const cappedPositionUsd = Math.min(positionUsd, overview.accountSize);
+    const cappedUnits = altPrice > 0 ? cappedPositionUsd / altPrice : 0;
+    const exceedsAccount = positionUsd > overview.accountSize;
     return {
       riskDollars,
+      stopPct,
+      positionUsd,
+      accountUsedPct,
+      exceedsAccount,
+      feasiblePosition: formatUsd(cappedPositionUsd),
+      warning: exceedsAccount
+        ? `This setup needs ${formatUsd(positionUsd)} of position value, which is above your ${formatUsd(overview.accountSize)} account size. Lower risk or tighten the stop before executing.`
+        : null,
       entries: [
-        ["Position Size", formatUsd(positionUsd)],
-        ["% Of Account Used", formatPct((positionUsd / overview.accountSize) * 100)],
+        ["Risk-Based Size", formatUsd(positionUsd)],
+        ["Feasible Spot Size", formatUsd(cappedPositionUsd)],
         ["Units", units.toFixed(4)],
+        ["Feasible Units", cappedUnits.toFixed(4)],
+        ["% Of Account Used", formatPct(accountUsedPct)],
+        ["Stop Distance", formatPct(stopPct * 100)],
         ["TP at 1:2", formatUsd(altPrice * (1 + stopPct * 2))],
         ["TP at 1:3", formatUsd(altPrice * (1 + stopPct * 3))],
-        ["Max Trades Allowed Today", `${Math.max(Math.floor(overview.safeStop / Math.max(riskDollars, 1)), 0)} trades`],
+        ["Max Trades Allowed Today", `${maxTradesToday} trades`],
       ],
     };
   }, [altPrice, altStopPct, assetMode, btcPrice, btcStop, overview.accountSize, overview.safeStop, riskPercent]);
@@ -75,6 +106,22 @@ export function PositionSizerTab({ data }: { data: RiskDashboardResponse }) {
             <MiniStat title="Safe Trades" value={`${Math.max(Math.floor(overview.safeStop / Math.max(computed.riskDollars, 1)), 0)}`} icon={<WalletCards className="h-4 w-4" />} />
             <MiniStat title="Asset Mode" value={assetMode === "BTC" ? "Bitcoin" : "Altcoins"} icon={assetMode === "BTC" ? <Bitcoin className="h-4 w-4" /> : <Coins className="h-4 w-4" />} />
           </div>
+
+          {computed.warning ? (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50/90 px-4 py-3 text-sm text-amber-800 shadow-sm dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-300">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                <div>
+                  <p className="font-semibold">Sizing warning</p>
+                  <p className="mt-1">{computed.warning}</p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/90 px-4 py-3 text-sm text-emerald-800 shadow-sm dark:border-emerald-900/70 dark:bg-emerald-950/40 dark:text-emerald-300">
+              This setup fits within the account balance and can be executed without exceeding spot buying power.
+            </div>
+          )}
 
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="Risk per trade %">
@@ -119,6 +166,16 @@ export function PositionSizerTab({ data }: { data: RiskDashboardResponse }) {
           <div className="flex items-center justify-between text-sm">
             <span className="text-slate-300">Risk % per trade</span>
             <span className="font-semibold text-white">{formatPct(riskPercent)}</span>
+          </div>
+          <div className={`rounded-2xl border px-4 py-3 text-sm ${computed.exceedsAccount ? "border-amber-400/30 bg-amber-400/10 text-amber-100" : "border-emerald-400/30 bg-emerald-400/10 text-emerald-100"}`}>
+            <div className="flex items-center justify-between gap-3">
+              <span>{computed.exceedsAccount ? "Execution State" : "Execution State"}</span>
+              <span className="font-semibold">{computed.exceedsAccount ? "Needs Adjustment" : "Feasible"}</span>
+            </div>
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <span className="text-slate-300">Account-feasible size</span>
+              <span className="font-semibold text-white">{computed.feasiblePosition}</span>
+            </div>
           </div>
           {computed.entries.map(([label, value]) => (
             <div key={label} className="flex items-center justify-between gap-3 border-t border-white/10 pt-4 text-sm">
