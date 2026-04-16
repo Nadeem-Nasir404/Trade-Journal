@@ -29,6 +29,7 @@ export function AccountsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [filterStatus, setFilterStatus] = useState<"ALL" | "ACTIVE" | "ARCHIVED">("ACTIVE");
   const [searchQuery, setSearchQuery] = useState("");
+  const [feedback, setFeedback] = useState<string | null>(null);
 
   async function loadAccounts() {
     const params = new URLSearchParams();
@@ -112,6 +113,12 @@ export function AccountsPage() {
       </div>
 
       <div className="mx-auto max-w-7xl px-6 py-6">
+        {feedback ? (
+          <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-300">
+            {feedback}
+          </div>
+        ) : null}
+
         {filteredAccounts.length === 0 ? (
           <EmptyState onNewAccount={() => setShowCreateModal(true)} />
         ) : (
@@ -123,12 +130,27 @@ export function AccountsPage() {
                 delay={index * 0.05}
                 onSelect={() => setSelectedAccountId(account.id)}
                 onArchive={async () => {
-                  await fetch(`/api/accounts/${account.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "ARCHIVED" }) });
+                  setFeedback(null);
+                  const res = await fetch(`/api/accounts/${account.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "ARCHIVED" }) });
+                  const json = (await res.json()) as { message?: string };
+                  if (!res.ok) {
+                    setFeedback(json.message ?? "Failed to archive account.");
+                    return;
+                  }
                   if (selectedAccountId === account.id) setSelectedAccountId(null);
                   await loadAccounts();
                 }}
                 onDelete={async () => {
-                  await fetch(`/api/accounts/${account.id}`, { method: "DELETE" });
+                  setFeedback(null);
+                  const res = await fetch(`/api/accounts/${account.id}`, { method: "DELETE" });
+                  const json = (await res.json()) as { message?: string };
+                  if (!res.ok) {
+                    setFeedback(json.message ?? "Failed to delete account.");
+                    return;
+                  }
+                  if (selectedAccountId === account.id) {
+                    setSelectedAccountId(null);
+                  }
                   await loadAccounts();
                 }}
               />

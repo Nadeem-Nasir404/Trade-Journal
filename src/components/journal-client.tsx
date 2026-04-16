@@ -69,6 +69,7 @@ export function JournalClient() {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState(blankForm);
+  const [chartSymbol, setChartSymbol] = useState("");
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [dateMode, setDateMode] = useState<DateMode>("ALL");
@@ -135,6 +136,7 @@ export function JournalClient() {
       entryType: "TRADE",
       linkedTradeIds: String(tradeId),
     }));
+    setChartSymbol(symbol);
     setOpen(true);
   }, [searchParams]);
 
@@ -213,6 +215,7 @@ export function JournalClient() {
     setOpen(false);
     setEditingId(null);
     setForm(blankForm);
+    setChartSymbol("");
     await loadEntries();
   }
 
@@ -261,6 +264,7 @@ export function JournalClient() {
       tomorrowFocus: "",
       content: entry.content,
     });
+    setChartSymbol(entry.trades?.[0]?.symbol ?? "");
     setOpen(true);
   }
 
@@ -301,6 +305,7 @@ export function JournalClient() {
               onClick={() => {
                 setEditingId(null);
                 setForm(blankForm);
+                setChartSymbol("");
                 setOpen(true);
               }}
               className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-3 font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all hover:from-emerald-600 hover:to-teal-700 sm:w-auto"
@@ -436,7 +441,7 @@ export function JournalClient() {
                 onDelete={() => void deleteEntry(entry.id)}
               />
             ))}
-            {!filteredEntries.length ? <JournalEmptyState onNewEntry={() => { setEditingId(null); setForm(blankForm); setOpen(true); }} /> : null}
+            {!filteredEntries.length ? <JournalEmptyState onNewEntry={() => { setEditingId(null); setForm(blankForm); setChartSymbol(""); setOpen(true); }} /> : null}
           </div>
         </CardContent>
       </Card>
@@ -444,9 +449,13 @@ export function JournalClient() {
       <JournalEntryModal
         open={open}
         editingId={editingId}
+        chartSymbol={chartSymbol}
         form={form}
         onChange={(updater) => setForm((prev) => updater(prev))}
-        onClose={() => setOpen(false)}
+        onClose={() => {
+          setOpen(false);
+          setChartSymbol("");
+        }}
         onPickImage={onPickImage}
         onSave={saveEntry}
       />
