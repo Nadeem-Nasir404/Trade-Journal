@@ -32,19 +32,23 @@ export function RiskDashboardClient() {
         return;
       }
 
-      setLoading(true);
-      setError(null);
-      const res = await fetch(`/api/risk-profile?accountId=${selectedAccountId}`, { cache: "no-store" });
-      const json = (await res.json()) as RiskDashboardResponse & { message?: string };
-      if (!res.ok) {
-        setError(json.message ?? "Failed to load risk dashboard.");
-        setLoading(false);
-        return;
-      }
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await fetch(`/api/risk-profile?accountId=${selectedAccountId}`, { cache: "no-store" });
+        const json = (await res.json()) as RiskDashboardResponse & { message?: string };
+        if (!res.ok) {
+          setError(json.message ?? "Failed to load risk dashboard.");
+          return;
+        }
 
-      setData(json);
-      setDraft(createDraft(json));
-      setLoading(false);
+        setData(json);
+        setDraft(createDraft(json));
+      } catch (error) {
+        setError(error instanceof Error ? error.message : "Failed to load risk dashboard.");
+      } finally {
+        setLoading(false);
+      }
     }
 
     void load();
@@ -52,38 +56,42 @@ export function RiskDashboardClient() {
 
   async function handleSave() {
     if (!selectedAccountId || !draft) return;
-    setSaving(true);
-    setError(null);
+    try {
+      setSaving(true);
+      setError(null);
 
-    const res = await fetch("/api/risk-profile", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        accountId: selectedAccountId,
-        accountType: draft.accountType,
-        startingBalance: draft.startingBalance,
-        currentBalance: draft.currentBalance,
-        maxDailyLoss: draft.accountType === "FUNDED" ? draft.dailyDdPct : null,
-        maxOverallDrawdown: draft.accountType === "FUNDED" ? draft.overallDdPct : null,
-        maxDailyLossType: draft.accountType === "FUNDED" ? "PERCENTAGE" : null,
-        maxDrawdownType: draft.accountType === "FUNDED" ? "PERCENTAGE" : null,
-        phase1TargetPct: draft.accountType === "FUNDED" ? draft.phase1TargetPct : null,
-        phase2TargetPct: draft.accountType === "FUNDED" ? draft.phase2TargetPct : null,
-        personalDailyLossPct: draft.accountType === "PERSONAL" && draft.personalDailyLossPct !== "" ? Number(draft.personalDailyLossPct) : null,
-        customRules: draft.customRules.filter((rule) => rule.trim().length > 0),
-      }),
-    });
+      const res = await fetch("/api/risk-profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          accountId: selectedAccountId,
+          accountType: draft.accountType,
+          startingBalance: draft.startingBalance,
+          currentBalance: draft.currentBalance,
+          maxDailyLoss: draft.accountType === "FUNDED" ? draft.dailyDdPct : null,
+          maxOverallDrawdown: draft.accountType === "FUNDED" ? draft.overallDdPct : null,
+          maxDailyLossType: draft.accountType === "FUNDED" ? "PERCENTAGE" : null,
+          maxDrawdownType: draft.accountType === "FUNDED" ? "PERCENTAGE" : null,
+          phase1TargetPct: draft.accountType === "FUNDED" ? draft.phase1TargetPct : null,
+          phase2TargetPct: draft.accountType === "FUNDED" ? draft.phase2TargetPct : null,
+          personalDailyLossPct: draft.accountType === "PERSONAL" && draft.personalDailyLossPct !== "" ? Number(draft.personalDailyLossPct) : null,
+          customRules: draft.customRules.filter((rule) => rule.trim().length > 0),
+        }),
+      });
 
-    const json = (await res.json()) as RiskDashboardResponse & { message?: string };
-    if (!res.ok) {
-      setError(json.message ?? "Failed to save settings.");
+      const json = (await res.json()) as RiskDashboardResponse & { message?: string };
+      if (!res.ok) {
+        setError(json.message ?? "Failed to save settings.");
+        return;
+      }
+
+      setData(json);
+      setDraft(createDraft(json));
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Failed to save settings.");
+    } finally {
       setSaving(false);
-      return;
     }
-
-    setData(json);
-    setDraft(createDraft(json));
-    setSaving(false);
   }
 
   function updateDraft<K extends keyof RiskSettingsDraft>(key: K, value: RiskSettingsDraft[K]) {
