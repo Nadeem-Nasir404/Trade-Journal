@@ -40,14 +40,24 @@ export function AccountSwitcher() {
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function load() {
       const res = await fetch("/api/accounts?status=ACTIVE", { cache: "no-store" });
       const json = (await res.json()) as { accounts?: Account[] };
       const list = json.accounts ?? [];
+      if (cancelled) return;
       setAccounts(list);
-      if (!selectedAccountId && list[0]) setSelectedAccountId(list[0].id);
+      if (!selectedAccountId && list[0]) {
+        setSelectedAccountId(list[0].id);
+      }
     }
+
     void load();
+
+    return () => {
+      cancelled = true;
+    };
   }, [selectedAccountId, setSelectedAccountId]);
 
   useEffect(() => {

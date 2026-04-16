@@ -85,8 +85,12 @@ export function RiskDashboardClient() {
         return;
       }
 
-      setData(json);
-      setDraft(createDraft(json));
+      if ("account" in json && "dashboard" in json) {
+        setData(json);
+        setDraft(createDraft(json));
+      } else {
+        setError(json.message ?? "Settings were saved partially.");
+      }
     } catch (error) {
       setError(error instanceof Error ? error.message : "Failed to save settings.");
     } finally {
@@ -165,6 +169,13 @@ export function RiskDashboardClient() {
       </div>
 
       <AccountSetupCard accountName={data.account.name} draft={draft} saving={saving} onChange={updateDraft} onSave={handleSave} />
+
+      {data.warningMessage ? (
+        <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-300">
+          <AlertCircle className="h-4 w-4" />
+          {data.warningMessage}
+        </div>
+      ) : null}
 
       {error ? (
         <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-300">

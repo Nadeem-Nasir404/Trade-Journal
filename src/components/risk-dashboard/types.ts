@@ -1,6 +1,8 @@
 export type RiskStatus = "SAFE" | "CAUTION" | "STOP";
 
 export type RiskDashboardResponse = {
+  migrationPending?: boolean;
+  warningMessage?: string | null;
   account: {
     id: number;
     name: string;

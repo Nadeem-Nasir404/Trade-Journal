@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 
 const STORAGE_KEY_PREFIX = "selected-trading-account-id";
@@ -34,7 +34,7 @@ export function useSelectedAccount() {
     return () => window.removeEventListener(EVENT_NAME, listener);
   }, [storageKey]);
 
-  function setSelectedAccountId(value: number | null) {
+  const setSelectedAccountId = useCallback((value: number | null) => {
     if (value && value > 0) {
       window.localStorage.setItem(storageKey, String(value));
     } else {
@@ -42,7 +42,7 @@ export function useSelectedAccount() {
     }
     setSelectedAccountIdState(value);
     window.dispatchEvent(new Event(EVENT_NAME));
-  }
+  }, [storageKey]);
 
   return { selectedAccountId, setSelectedAccountId };
 }
