@@ -1,3 +1,5 @@
+import { AlertTriangle, ShieldAlert, Wallet } from "lucide-react";
+
 import { ChartWrapper } from "@/components/ui/ChartWrapper";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,16 +15,16 @@ export function DrawdownTab({ data }: { data: RiskDashboardResponse }) {
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
       <div className="space-y-4">
-        <Card>
-          <CardHeader>
+        <Card className="overflow-hidden rounded-[24px] border-slate-200/80 bg-white/90 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.45)] dark:border-slate-800 dark:bg-slate-900/90">
+          <CardHeader className="border-b border-slate-200/80 bg-slate-50/70 dark:border-slate-800 dark:bg-slate-950/40">
             <CardTitle>Drawdown Tracker</CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="grid gap-3 md:grid-cols-2">
-              <Stat title="Today's P&L" value={formatUsd(drawdown.todayPnl)} />
-              <Stat title="Cumulative Overall Loss" value={formatUsd(drawdown.cumulativeOverallLoss)} />
-              <Stat title="Remaining Daily Risk" value={formatUsd(drawdown.remainingDailyRisk)} />
-              <Stat title="Remaining Overall Risk" value={formatUsd(drawdown.remainingOverallRisk)} />
+              <Stat title="Today's P&L" value={formatUsd(drawdown.todayPnl)} icon={<Wallet className="h-4 w-4" />} />
+              <Stat title="Cumulative Overall Loss" value={formatUsd(drawdown.cumulativeOverallLoss)} icon={<AlertTriangle className="h-4 w-4" />} />
+              <Stat title="Remaining Daily Risk" value={formatUsd(drawdown.remainingDailyRisk)} icon={<ShieldAlert className="h-4 w-4" />} />
+              <Stat title="Remaining Overall Risk" value={formatUsd(drawdown.remainingOverallRisk)} icon={<ShieldAlert className="h-4 w-4" />} />
             </div>
 
             <ProgressBar label="Daily DD used" value={drawdown.dailyProgress} tone={drawdown.dailyProgress >= 80 ? "rose" : drawdown.dailyProgress >= 60 ? "amber" : "emerald"} />
@@ -32,8 +34,8 @@ export function DrawdownTab({ data }: { data: RiskDashboardResponse }) {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
+        <Card className="overflow-hidden rounded-[24px] border-slate-200/80 bg-white/90 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.45)] dark:border-slate-800 dark:bg-slate-900/90">
+          <CardHeader className="border-b border-slate-200/80 bg-slate-50/70 dark:border-slate-800 dark:bg-slate-950/40">
             <CardTitle>Trade Log</CardTitle>
           </CardHeader>
           <CardContent>
@@ -73,10 +75,13 @@ export function DrawdownTab({ data }: { data: RiskDashboardResponse }) {
   );
 }
 
-function Stat({ title, value }: { title: string; value: string }) {
+function Stat({ title, value, icon }: { title: string; value: string; icon: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
-      <p className="text-sm text-slate-500 dark:text-slate-400">{title}</p>
+    <div className="rounded-2xl border border-slate-200 p-4 dark:border-slate-800">
+      <div className="mb-2 flex items-center gap-2 text-slate-500 dark:text-slate-400">
+        {icon}
+        <p className="text-sm">{title}</p>
+      </div>
       <p className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-100">{value}</p>
     </div>
   );

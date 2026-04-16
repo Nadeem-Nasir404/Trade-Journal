@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Bitcoin, Coins, ShieldCheck, WalletCards } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -55,17 +56,24 @@ export function PositionSizerTab({ data }: { data: RiskDashboardResponse }) {
 
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
-      <Card>
-        <CardHeader>
+      <Card className="overflow-hidden rounded-[24px] border-slate-200/80 bg-white/90 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.45)] dark:border-slate-800 dark:bg-slate-900/90">
+        <CardHeader className="border-b border-slate-200/80 bg-slate-50/70 dark:border-slate-800 dark:bg-slate-950/40">
           <CardTitle>Position Inputs</CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="flex flex-wrap gap-2">
             {(["BTC", "ALTS"] as const).map((mode) => (
-              <Button key={mode} type="button" variant={assetMode === mode ? "default" : "outline"} onClick={() => setAssetMode(mode)}>
+              <Button key={mode} type="button" variant={assetMode === mode ? "default" : "outline"} onClick={() => setAssetMode(mode)} className="rounded-2xl">
+                {mode === "BTC" ? <Bitcoin className="h-4 w-4" /> : <Coins className="h-4 w-4" />}
                 {mode === "BTC" ? "BTC" : "Alts"}
               </Button>
             ))}
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            <MiniStat title="Risk Budget" value={formatUsd(computed.riskDollars)} icon={<ShieldCheck className="h-4 w-4" />} />
+            <MiniStat title="Safe Trades" value={`${Math.max(Math.floor(overview.safeStop / Math.max(computed.riskDollars, 1)), 0)}`} icon={<WalletCards className="h-4 w-4" />} />
+            <MiniStat title="Asset Mode" value={assetMode === "BTC" ? "Bitcoin" : "Altcoins"} icon={assetMode === "BTC" ? <Bitcoin className="h-4 w-4" /> : <Coins className="h-4 w-4" />} />
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -99,27 +107,39 @@ export function PositionSizerTab({ data }: { data: RiskDashboardResponse }) {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Sizer Output</CardTitle>
+      <Card className="overflow-hidden rounded-[24px] border-slate-200/80 bg-[linear-gradient(180deg,rgba(15,23,42,0.98)_0%,rgba(17,24,39,0.98)_45%,rgba(6,78,59,0.25)_100%)] text-slate-100 shadow-[0_18px_40px_-28px_rgba(16,185,129,0.45)] dark:border-slate-800">
+        <CardHeader className="border-b border-white/10">
+          <CardTitle className="text-slate-100">Sizer Output</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-slate-500 dark:text-slate-400">Risk per trade</span>
-            <span className="font-semibold text-slate-900 dark:text-slate-100">{formatUsd(computed.riskDollars)}</span>
+            <span className="text-slate-300">Risk per trade</span>
+            <span className="font-semibold text-white">{formatUsd(computed.riskDollars)}</span>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-slate-500 dark:text-slate-400">Risk % per trade</span>
-            <span className="font-semibold text-slate-900 dark:text-slate-100">{formatPct(riskPercent)}</span>
+            <span className="text-slate-300">Risk % per trade</span>
+            <span className="font-semibold text-white">{formatPct(riskPercent)}</span>
           </div>
           {computed.entries.map(([label, value]) => (
-            <div key={label} className="flex items-center justify-between gap-3 border-t border-slate-200 pt-4 text-sm dark:border-slate-800">
-              <span className="text-slate-500 dark:text-slate-400">{label}</span>
-              <span className="text-right font-semibold text-slate-900 dark:text-slate-100">{value}</span>
+            <div key={label} className="flex items-center justify-between gap-3 border-t border-white/10 pt-4 text-sm">
+              <span className="text-slate-300">{label}</span>
+              <span className="text-right font-semibold text-white">{value}</span>
             </div>
           ))}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function MiniStat({ title, value, icon }: { title: string; value: string; icon: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 px-4 py-3 dark:border-slate-800 dark:bg-slate-950/40">
+      <div className="mb-2 flex items-center gap-2 text-slate-500 dark:text-slate-400">
+        {icon}
+        <span className="text-xs font-semibold uppercase tracking-[0.18em]">{title}</span>
+      </div>
+      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{value}</p>
     </div>
   );
 }
