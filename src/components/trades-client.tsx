@@ -7,6 +7,7 @@ import { addDays, format, parseISO } from "date-fns";
 
 import AddTradeModal, { type TradeFormTrade } from "@/components/AddTradeModal";
 import TradeListView from "@/components/TradeListView";
+import { TradesPerformanceChart } from "@/components/trades-performance-chart";
 import { Button } from "@/components/ui/button";
 import { useSelectedAccount } from "@/hooks/use-selected-account";
 
@@ -165,6 +166,8 @@ export function TradesClient() {
           <p className="mt-3 rounded-md border border-rose-400/40 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">{syncError}</p>
         ) : null}
       </div>
+
+      <TradesPerformanceChart date={selectedDate} trades={dayTrades} />
 
       <TradeListView
         date={selectedDate}

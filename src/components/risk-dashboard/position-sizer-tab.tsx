@@ -9,9 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import type { RiskDashboardResponse } from "@/components/risk-dashboard/types";
 import { formatPct, formatUsd } from "@/components/risk-dashboard/utils";
+import { saveImportedTradeDraft } from "@/lib/trade-draft";
 
 export function PositionSizerTab({ data }: { data: RiskDashboardResponse }) {
   const [assetMode, setAssetMode] = useState<"BTC" | "ALTS">("BTC");
+  const [direction, setDirection] = useState<"LONG" | "SHORT">("LONG");
+  const [symbol, setSymbol] = useState("BTCUSDT");
   const [riskPercent, setRiskPercent] = useState(1);
   const [btcStop, setBtcStop] = useState(500);
   const [btcPrice, setBtcPrice] = useState(83000);
@@ -31,6 +34,9 @@ export function PositionSizerTab({ data }: { data: RiskDashboardResponse }) {
       const cappedPositionUsd = Math.min(positionUsd, overview.accountSize);
       const cappedPositionSize = btcPrice > 0 ? cappedPositionUsd / btcPrice : 0;
       const exceedsAccount = positionUsd > overview.accountSize;
+      const takeProfit2R = direction === "LONG" ? btcPrice + btcStop * 2 : btcPrice - btcStop * 2;
+      const takeProfit3R = direction === "LONG" ? btcPrice + btcStop * 3 : btcPrice - btcStop * 3;
+      const stopLoss = direction === "LONG" ? btcPrice - btcStop : btcPrice + btcStop;
       return {
         riskDollars,
         stopPct,
@@ -38,6 +44,15 @@ export function PositionSizerTab({ data }: { data: RiskDashboardResponse }) {
         accountUsedPct,
         exceedsAccount,
         feasiblePosition: `${cappedPositionSize.toFixed(5)} BTC`,
+        tradeDraft: {
+          symbol: symbol.trim() || "BTCUSDT",
+          side: direction,
+          entryPrice: btcPrice,
+          stopLoss,
+          takeProfit: takeProfit2R,
+          quantity: Number(cappedPositionSize.toFixed(5)),
+          riskUsd: Number(riskDollars.toFixed(2)),
+        },
         warning: exceedsAccount
           ? `This setup needs ${formatUsd(positionUsd)} of notional exposure, which is more than your ${formatUsd(overview.accountSize)} account. Either reduce risk, tighten the stop, or use leverage intentionally.`
           : null,
@@ -47,8 +62,8 @@ export function PositionSizerTab({ data }: { data: RiskDashboardResponse }) {
           ["Required Notional", formatUsd(positionUsd)],
           ["% Of Account Used", formatPct(accountUsedPct)],
           ["Stop Distance", formatPct(stopPct * 100)],
-          ["TP at 1:2", formatUsd(btcPrice + btcStop * 2)],
-          ["TP at 1:3", formatUsd(btcPrice + btcStop * 3)],
+          ["TP at 1:2", formatUsd(takeProfit2R)],
+          ["TP at 1:3", formatUsd(takeProfit3R)],
           ["Max Trades Allowed Today", `${maxTradesToday} trades`],
         ],
       };
@@ -61,6 +76,10 @@ export function PositionSizerTab({ data }: { data: RiskDashboardResponse }) {
     const cappedPositionUsd = Math.min(positionUsd, overview.accountSize);
     const cappedUnits = altPrice > 0 ? cappedPositionUsd / altPrice : 0;
     const exceedsAccount = positionUsd > overview.accountSize;
+    const stopDistance = altPrice * stopPct;
+    const stopLoss = direction === "LONG" ? altPrice - stopDistance : altPrice + stopDistance;
+    const takeProfit2R = direction === "LONG" ? altPrice * (1 + stopPct * 2) : altPrice * (1 - stopPct * 2);
+    const takeProfit3R = direction === "LONG" ? altPrice * (1 + stopPct * 3) : altPrice * (1 - stopPct * 3);
     return {
       riskDollars,
       stopPct,
@@ -68,6 +87,15 @@ export function PositionSizerTab({ data }: { data: RiskDashboardResponse }) {
       accountUsedPct,
       exceedsAccount,
       feasiblePosition: formatUsd(cappedPositionUsd),
+      tradeDraft: {
+        symbol: symbol.trim(),
+        side: direction,
+        entryPrice: altPrice,
+        stopLoss,
+        takeProfit: takeProfit2R,
+        quantity: Number(cappedUnits.toFixed(4)),
+        riskUsd: Number(riskDollars.toFixed(2)),
+      },
       warning: exceedsAccount
         ? `This setup needs ${formatUsd(positionUsd)} of position value, which is above your ${formatUsd(overview.accountSize)} account size. Lower risk or tighten the stop before executing.`
         : null,
@@ -78,12 +106,24 @@ export function PositionSizerTab({ data }: { data: RiskDashboardResponse }) {
         ["Feasible Units", cappedUnits.toFixed(4)],
         ["% Of Account Used", formatPct(accountUsedPct)],
         ["Stop Distance", formatPct(stopPct * 100)],
-        ["TP at 1:2", formatUsd(altPrice * (1 + stopPct * 2))],
-        ["TP at 1:3", formatUsd(altPrice * (1 + stopPct * 3))],
+        ["TP at 1:2", formatUsd(takeProfit2R)],
+        ["TP at 1:3", formatUsd(takeProfit3R)],
         ["Max Trades Allowed Today", `${maxTradesToday} trades`],
       ],
     };
-  }, [altPrice, altStopPct, assetMode, btcPrice, btcStop, overview.accountSize, overview.safeStop, riskPercent]);
+  }, [altPrice, altStopPct, assetMode, btcPrice, btcStop, direction, overview.accountSize, overview.safeStop, riskPercent, symbol]);
+
+  function handleSendToTradeDraft() {
+    if (!computed.tradeDraft.symbol) return;
+
+    saveImportedTradeDraft({
+      source: "risk-position-sizer",
+      ...computed.tradeDraft,
+      setup: "Imported from Risk Position Sizer",
+      notes: `Imported from ${assetMode} ${direction} position sizing plan.`,
+      createdAt: new Date().toISOString(),
+    });
+  }
 
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
@@ -105,6 +145,21 @@ export function PositionSizerTab({ data }: { data: RiskDashboardResponse }) {
             <MiniStat title="Risk Budget" value={formatUsd(computed.riskDollars)} icon={<ShieldCheck className="h-4 w-4" />} />
             <MiniStat title="Safe Trades" value={`${Math.max(Math.floor(overview.safeStop / Math.max(computed.riskDollars, 1)), 0)}`} icon={<WalletCards className="h-4 w-4" />} />
             <MiniStat title="Asset Mode" value={assetMode === "BTC" ? "Bitcoin" : "Altcoins"} icon={assetMode === "BTC" ? <Bitcoin className="h-4 w-4" /> : <Coins className="h-4 w-4" />} />
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="Symbol / Pair">
+              <Input value={symbol} onChange={(e) => setSymbol(e.target.value.toUpperCase())} placeholder={assetMode === "BTC" ? "BTCUSDT" : "ETHUSDT"} />
+            </Field>
+            <Field label="Direction">
+              <div className="flex gap-2">
+                {(["LONG", "SHORT"] as const).map((value) => (
+                  <Button key={value} type="button" variant={direction === value ? "default" : "outline"} className="flex-1 rounded-2xl" onClick={() => setDirection(value)}>
+                    {value}
+                  </Button>
+                ))}
+              </div>
+            </Field>
           </div>
 
           {computed.warning ? (
@@ -151,6 +206,12 @@ export function PositionSizerTab({ data }: { data: RiskDashboardResponse }) {
               </Field>
             </div>
           )}
+
+          <div className="flex justify-end">
+            <Button type="button" onClick={handleSendToTradeDraft} disabled={!computed.tradeDraft.symbol || computed.tradeDraft.quantity <= 0}>
+              Send To Trade Draft
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

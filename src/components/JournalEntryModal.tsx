@@ -4,7 +4,6 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle, CheckCircle2, Heart, Lightbulb, Upload, X } from "lucide-react";
 
-import { TradingViewChart } from "@/components/tradingview-chart";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,7 +33,6 @@ export type JournalFormValues = {
 type Props = {
   open: boolean;
   editingId: number | null;
-  chartSymbol?: string;
   form: JournalFormValues;
   onChange: (updater: (prev: JournalFormValues) => JournalFormValues) => void;
   onClose: () => void;
@@ -42,7 +40,7 @@ type Props = {
   onSave: () => Promise<void>;
 };
 
-export function JournalEntryModal({ open, editingId, chartSymbol, form, onChange, onClose, onPickImage, onSave }: Props) {
+export function JournalEntryModal({ open, editingId, form, onChange, onClose, onPickImage, onSave }: Props) {
   const moodOptions: Array<{ value: string; label: string; active: string; idle: string }> = [
     { value: "GREAT", label: "Great", active: "bg-emerald-500 text-white border-emerald-500", idle: "border-slate-300 hover:border-emerald-400" },
     { value: "GOOD", label: "Good", active: "bg-teal-500 text-white border-teal-500", idle: "border-slate-300 hover:border-teal-400" },
@@ -73,7 +71,7 @@ export function JournalEntryModal({ open, editingId, chartSymbol, form, onChange
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: "spring", duration: 0.5 }}
-              className="pointer-events-auto flex max-h-[92vh] w-full max-w-7xl flex-col overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950 sm:max-h-[90vh]"
+              className="pointer-events-auto flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950 sm:max-h-[90vh]"
             >
               <div className="border-b border-emerald-200 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 px-5 py-4 dark:border-emerald-900/30">
                 <div className="flex items-start justify-between gap-3">
@@ -94,8 +92,7 @@ export function JournalEntryModal({ open, editingId, chartSymbol, form, onChange
                 </div>
               </div>
 
-              <div className="grid min-h-0 flex-1 gap-4 overflow-hidden px-5 py-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
-                <div className="min-h-0 space-y-4 overflow-y-auto pr-1">
+              <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-4">
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="space-y-1">
                       <Label>Date</Label>
@@ -232,11 +229,6 @@ export function JournalEntryModal({ open, editingId, chartSymbol, form, onChange
                     <Label>Tags (optional)</Label>
                     <Input value={form.tags} onChange={(e) => onChange((p) => ({ ...p, tags: e.target.value }))} placeholder="breakout, discipline, fomo" />
                   </div>
-                </div>
-
-                <div className="min-h-0 overflow-y-auto">
-                  <TradingViewChart symbol={chartSymbol} title="Execution Chart" />
-                </div>
               </div>
 
               <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/60">

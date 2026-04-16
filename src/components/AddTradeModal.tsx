@@ -20,6 +20,7 @@ import { useSelectedAccount } from "@/hooks/use-selected-account";
 import { SymbolLogo } from "@/components/symbol-logo";
 import { AnnotationEditor } from "@/components/AnnotationEditor";
 import { ScreenshotUpload, type TradeScreenshot } from "@/components/ScreenshotUpload";
+import { clearImportedTradeDraft, readImportedTradeDraft } from "@/lib/trade-draft";
 
 type TradeStatus = "RUNNING" | "PROFIT" | "LOSS" | "BREAKEVEN";
 type TradeSide = "LONG" | "SHORT";
@@ -192,6 +193,29 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
     notes: "",
     emotions: [] as string[],
   });
+
+  function applyImportedDraft() {
+    const imported = readImportedTradeDraft();
+    if (!imported) {
+      setSaveError("No saved position-tool draft was found.");
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      symbol: imported.symbol || prev.symbol,
+      direction: imported.side,
+      entry: imported.entryPrice ? String(imported.entryPrice) : prev.entry,
+      stopLoss: imported.stopLoss ? String(imported.stopLoss) : prev.stopLoss,
+      takeProfit: imported.takeProfit ? String(imported.takeProfit) : prev.takeProfit,
+      quantity: imported.quantity ? String(imported.quantity) : prev.quantity,
+      setup: imported.setup ?? prev.setup,
+      notes: imported.notes ? [imported.notes, prev.notes].filter(Boolean).join("\n\n") : prev.notes,
+    }));
+    setActiveTab("BASIC");
+    setSaveError("");
+    clearImportedTradeDraft();
+  }
 
   useEffect(() => {
     if (!initialTrade) return;
@@ -451,7 +475,12 @@ export default function AddTradeModal({ isOpen, onClose, selectedDate, onSaved, 
                     <p className="text-sm text-slate-500 dark:text-slate-400">{new Date(selectedDate).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
                   </div>
                 </div>
-                <button onClick={onClose} className="rounded-lg p-2 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"><X className="h-5 w-5 text-slate-500 dark:text-slate-400" /></button>
+                <div className="flex items-center gap-2">
+                  <Button type="button" variant="outline" onClick={applyImportedDraft}>
+                    Pull Position Tool
+                  </Button>
+                  <button onClick={onClose} className="rounded-lg p-2 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"><X className="h-5 w-5 text-slate-500 dark:text-slate-400" /></button>
+                </div>
               </div>
 
               <form onSubmit={(e) => void handleSubmit(e)} className="max-h-[calc(90vh-200px)] space-y-6 overflow-y-auto p-6">
