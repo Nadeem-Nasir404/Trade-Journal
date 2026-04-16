@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+type RiskProfileApiResponse = RiskDashboardResponse | { message?: string; migrationPending?: boolean };
+
 export function RiskDashboardClient() {
   const { selectedAccountId } = useSelectedAccount();
   const [data, setData] = useState<RiskDashboardResponse | null>(null);
@@ -36,14 +38,18 @@ export function RiskDashboardClient() {
         setLoading(true);
         setError(null);
         const res = await fetch(`/api/risk-profile?accountId=${selectedAccountId}`, { cache: "no-store" });
-        const json = (await res.json()) as RiskDashboardResponse & { message?: string };
+        const json = (await res.json()) as RiskProfileApiResponse;
         if (!res.ok) {
-          setError(json.message ?? "Failed to load risk dashboard.");
+          setError("message" in json ? (json.message ?? "Failed to load risk dashboard.") : "Failed to load risk dashboard.");
           return;
         }
 
-        setData(json);
-        setDraft(createDraft(json));
+        if ("account" in json && "dashboard" in json) {
+          setData(json);
+          setDraft(createDraft(json));
+        } else {
+          setError(json.message ?? "Failed to load risk dashboard.");
+        }
       } catch (error) {
         setError(error instanceof Error ? error.message : "Failed to load risk dashboard.");
       } finally {
@@ -79,9 +85,9 @@ export function RiskDashboardClient() {
         }),
       });
 
-      const json = (await res.json()) as RiskDashboardResponse & { message?: string };
+      const json = (await res.json()) as RiskProfileApiResponse;
       if (!res.ok) {
-        setError(json.message ?? "Failed to save settings.");
+        setError("message" in json ? (json.message ?? "Failed to save settings.") : "Failed to save settings.");
         return;
       }
 
@@ -89,7 +95,7 @@ export function RiskDashboardClient() {
         setData(json);
         setDraft(createDraft(json));
       } else {
-        setError(json.message ?? "Settings were saved partially.");
+        setError("message" in json ? (json.message ?? "Settings were saved partially.") : "Settings were saved partially.");
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : "Failed to save settings.");
